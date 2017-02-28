@@ -38,6 +38,6 @@ class PlaceNewPlayerTask extends BukkitRunnable
 	@Override
 	public void run()
 	{
-		instance.TeleportPlayer(player, region, 0);
+		instance.TeleportPlayerToRegion(player, region, 0, instance.config_launchAndDropNewPlayers);
 	}
 }

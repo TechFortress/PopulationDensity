@@ -125,6 +125,7 @@ public class PopulationDensity extends JavaPlugin
 	public boolean config_keepSpawnRegionPostLoaded;
 	public boolean config_keepAllRegionPostsLoaded;
 	boolean config_launchAndDropPlayers;
+        boolean config_launchAndDropNewPlayers;
 	
 	public int minimumRegionPostY;
 	
@@ -216,6 +217,7 @@ public class PopulationDensity extends JavaPlugin
 		this.config_keepSpawnRegionPostLoaded = config.getBoolean("PopulationDensity.KeepSpawnRegionPostLoaded", true);
 		this.config_keepAllRegionPostsLoaded = config.getBoolean("PopulationDensity.KeepAllRegionPostsLoaded", false);
 		this.config_launchAndDropPlayers = config.getBoolean("PopulationDensity.LaunchAndDropPlayers", true);
+                this.config_launchAndDropNewPlayers = config.getBoolean("PopulationDensity.LaunchAndDropNewPlayers", true);
 
 		
 		String topper = config.getString("PopulationDensity.PostDesign.TopBlock", "89:0");  //default glowstone
@@ -390,6 +392,7 @@ public class PopulationDensity extends JavaPlugin
 		outConfig.set("PopulationDensity.KeepSpawnRegionPostLoaded", this.config_keepSpawnRegionPostLoaded);
 		outConfig.set("PopulationDensity.KeepAllRegionPostsLoaded", this.config_keepAllRegionPostsLoaded);
 		outConfig.set("PopulationDensity.LaunchAndDropPlayers", this.config_launchAndDropPlayers);
+                outConfig.set("PopulationDensity.LaunchAndDropNewPlayers", this.config_launchAndDropNewPlayers);
 		outConfig.set("PopulationDensity.MinimumRegionPostY", this.minimumRegionPostY);
 		outConfig.set("PopulationDensity.PreciseWorldSpawn", this.preciseWorldSpawn);
 		outConfig.set("PopulationDensity.MinimumWoodAvailableToPlaceNewPlayers", this.woodMinimum);
@@ -458,7 +461,7 @@ public class PopulationDensity extends JavaPlugin
 		pluginManager.registerEvents(worldEventHandler, this);
 
 		//Only load listeners if LaunchAndDrop is enabled in config
-		if (config_launchAndDropPlayers)
+		if (config_launchAndDropPlayers || config_launchAndDropNewPlayers)
 		{
 			this.dropShipTeleporterInstance = new DropShipTeleporter(this);
 			pluginManager.registerEvents(dropShipTeleporterInstance, this);
@@ -1211,7 +1214,12 @@ public class PopulationDensity extends JavaPlugin
 
 	//teleports a player to a specific region of the managed world, notifying players of arrival/departure as necessary
 	//players always land at the region's region post, which is placed on the surface at the center of the region
-	public void TeleportPlayer(Player player, RegionCoordinates region, int delaySeconds)
+        public void TeleportPlayer(Player player, RegionCoordinates region, int delaySeconds)
+	{
+            TeleportPlayerToRegion(player, region, delaySeconds, config_launchAndDropPlayers );
+        }
+        
+	public void TeleportPlayerToRegion(Player player, RegionCoordinates region, int delaySeconds, Boolean doDrop)
 	{
 		//where specifically to send the player?
 		Location teleportDestination = getRegionCenter(region, true);
@@ -1221,14 +1229,14 @@ public class PopulationDensity extends JavaPlugin
 
 		
 		//drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
-		if (config_launchAndDropPlayers)
+		if ( doDrop )
 			teleportDestination = new Location(ManagedWorld, teleportDestination.getX(), ManagedWorld.getMaxHeight() + 10, teleportDestination.getZ(), player.getLocation().getYaw(), 90);
-		new TeleportPlayerTask(player, teleportDestination, config_launchAndDropPlayers, instance, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
+		new TeleportPlayerTask(player, teleportDestination, doDrop, instance, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
 		
 		//kill bad guys in the area
 		removeMonstersAround(teleportDestination);
 	}
-	
+        
 	//scans the open region for resources and may close the region (and open a new one) if accessible resources are low
 	//may repeat itself if the regions it opens are also not acceptably rich in resources
 	@SuppressWarnings("deprecation")
