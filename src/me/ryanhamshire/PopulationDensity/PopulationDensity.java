@@ -217,7 +217,7 @@ public class PopulationDensity extends JavaPlugin
 		this.config_keepSpawnRegionPostLoaded = config.getBoolean("PopulationDensity.KeepSpawnRegionPostLoaded", true);
 		this.config_keepAllRegionPostsLoaded = config.getBoolean("PopulationDensity.KeepAllRegionPostsLoaded", false);
 		this.config_launchAndDropPlayers = config.getBoolean("PopulationDensity.LaunchAndDropPlayers", true);
-                this.config_launchAndDropNewPlayers = config.getBoolean("PopulationDensity.LaunchAndDropNewPlayers", true);
+		this.config_launchAndDropNewPlayers = config.getBoolean("PopulationDensity.LaunchAndDropNewPlayers", true);
 
 		
 		String topper = config.getString("PopulationDensity.PostDesign.TopBlock", "89:0");  //default glowstone
@@ -392,7 +392,7 @@ public class PopulationDensity extends JavaPlugin
 		outConfig.set("PopulationDensity.KeepSpawnRegionPostLoaded", this.config_keepSpawnRegionPostLoaded);
 		outConfig.set("PopulationDensity.KeepAllRegionPostsLoaded", this.config_keepAllRegionPostsLoaded);
 		outConfig.set("PopulationDensity.LaunchAndDropPlayers", this.config_launchAndDropPlayers);
-                outConfig.set("PopulationDensity.LaunchAndDropNewPlayers", this.config_launchAndDropNewPlayers);
+		outConfig.set("PopulationDensity.LaunchAndDropNewPlayers", this.config_launchAndDropNewPlayers);
 		outConfig.set("PopulationDensity.MinimumRegionPostY", this.minimumRegionPostY);
 		outConfig.set("PopulationDensity.PreciseWorldSpawn", this.preciseWorldSpawn);
 		outConfig.set("PopulationDensity.MinimumWoodAvailableToPlaceNewPlayers", this.woodMinimum);
@@ -1214,10 +1214,10 @@ public class PopulationDensity extends JavaPlugin
 
 	//teleports a player to a specific region of the managed world, notifying players of arrival/departure as necessary
 	//players always land at the region's region post, which is placed on the surface at the center of the region
-        public void TeleportPlayer(Player player, RegionCoordinates region, int delaySeconds)
+	public void TeleportPlayer(Player player, RegionCoordinates region, int delaySeconds)
 	{
-            TeleportPlayerToRegion(player, region, delaySeconds, config_launchAndDropPlayers );
-        }
+	    TeleportPlayerToRegion(player, region, delaySeconds, config_launchAndDropPlayers );
+	}
         
 	public void TeleportPlayerToRegion(Player player, RegionCoordinates region, int delaySeconds, Boolean doDrop)
 	{
@@ -1236,7 +1236,7 @@ public class PopulationDensity extends JavaPlugin
 		//kill bad guys in the area
 		removeMonstersAround(teleportDestination);
 	}
-        
+	
 	//scans the open region for resources and may close the region (and open a new one) if accessible resources are low
 	//may repeat itself if the regions it opens are also not acceptably rich in resources
 	@SuppressWarnings("deprecation")
