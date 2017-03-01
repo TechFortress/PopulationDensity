@@ -1216,7 +1216,7 @@ public class PopulationDensity extends JavaPlugin
 	//players always land at the region's region post, which is placed on the surface at the center of the region
 	public void TeleportPlayer(Player player, RegionCoordinates region, int delaySeconds)
 	{
-	    TeleportPlayerToRegion(player, region, delaySeconds, config_launchAndDropPlayers );
+	    TeleportPlayerToRegion(player, region, delaySeconds, config_launchAndDropPlayers);
 	}
         
 	public void TeleportPlayerToRegion(Player player, RegionCoordinates region, int delaySeconds, Boolean doDrop)
@@ -1229,7 +1229,7 @@ public class PopulationDensity extends JavaPlugin
 
 		
 		//drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
-		if ( doDrop )
+		if (doDrop)
 			teleportDestination = new Location(ManagedWorld, teleportDestination.getX(), ManagedWorld.getMaxHeight() + 10, teleportDestination.getZ(), player.getLocation().getYaw(), 90);
 		new TeleportPlayerTask(player, teleportDestination, doDrop, instance, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
 		
