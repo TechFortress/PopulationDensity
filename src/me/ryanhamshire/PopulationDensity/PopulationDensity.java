@@ -29,6 +29,7 @@ import org.apache.commons.lang.WordUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -1229,7 +1230,7 @@ public class PopulationDensity extends JavaPlugin
 
 		
 		//drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
-		if (doDrop)
+		if (doDrop && !player.getGameMode().equals(GameMode.SPECTATOR))
 			teleportDestination = new Location(ManagedWorld, teleportDestination.getX(), ManagedWorld.getMaxHeight() + 10, teleportDestination.getZ(), player.getLocation().getYaw(), 90);
 		new TeleportPlayerTask(player, teleportDestination, doDrop, instance, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
 		
