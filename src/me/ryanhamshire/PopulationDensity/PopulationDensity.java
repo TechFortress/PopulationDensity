@@ -818,8 +818,15 @@ public class PopulationDensity extends JavaPlugin
 			if(invitee != null)
 			{
 				playerData = this.dataStore.getPlayerData(invitee);
+				if(playerData.inviter == player)
+				{
+					PopulationDensity.sendMessage(player, TextMode.Success, Messages.InviteAlreadySent, invitee.getName(), player.getName());
+					return true;
+				}
 				playerData.inviter = player;
 				PopulationDensity.sendMessage(player, TextMode.Success, Messages.InviteConfirmation, invitee.getName(), player.getName());
+				PopulationDensity.sendMessage(invitee, TextMode.Success, Messages.InviteNotification, player.getName());		
+				PopulationDensity.sendMessage(invitee, TextMode.Instr, Messages.InviteInstruction, player.getName());
 			}
 			else
 			{
