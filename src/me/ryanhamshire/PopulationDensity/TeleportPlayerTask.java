@@ -82,7 +82,7 @@ class TeleportPlayerTask extends BukkitRunnable {
                 }
                 if (entity instanceof LivingEntity) {
                     LivingEntity creature = (LivingEntity) entity;
-                    if ((creature.isLeashed() && player.equals(creature.getLeashHolder())) || player.equals(creature.getPassenger())) {
+                    if ((creature.isLeashed() && player.equals(creature.getLeashHolder())) || (creature.getPassengers().contains(player) && creature.getPassengers().size() < 2)) {
                         entitiesToTeleport.add(creature);
                     }
                 }
