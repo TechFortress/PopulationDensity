@@ -369,7 +369,7 @@ public class PopulationDensity extends JavaPlugin
 		outConfig.set("PopulationDensity.CityWorldName", this.cityWorldName);
 		outConfig.set("PopulationDensity.AllowTeleportation", this.allowTeleportation);
 		outConfig.set("PopulationDensity.TeleportFromAnywhere", this.teleportFromAnywhere);
-		outConfig.set("PopulationDensity.TeleportNearbyAnimals", this.teleportFromAnywhere);
+		outConfig.set("PopulationDensity.TeleportNearbyAnimals", this.teleportNearbyAnimals);
 		outConfig.set("PopulationDensity.MaxDistanceFromSpawnToUseHomeRegion", this.maxDistanceFromSpawnToUseHomeRegion);
 		outConfig.set("PopulationDensity.ManagedWorldName", this.managedWorldName);
 		outConfig.set("PopulationDensity.DensityRatio", this.densityRatio);
