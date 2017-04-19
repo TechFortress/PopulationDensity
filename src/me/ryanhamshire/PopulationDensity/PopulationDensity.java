@@ -84,6 +84,7 @@ public class PopulationDensity extends JavaPlugin
 	//user configuration, loaded/saved from a config.yml
 	public boolean allowTeleportation;
 	public boolean teleportFromAnywhere;
+	public boolean teleportNearbyAnimals;
 	public boolean newPlayersSpawnInHomeRegion;
 	public boolean respawnInHomeRegion;
 	public String cityWorldName;
@@ -186,6 +187,7 @@ public class PopulationDensity extends JavaPlugin
 		//read configuration settings (note defaults)
 		this.allowTeleportation = config.getBoolean("PopulationDensity.AllowTeleportation", true);
 		this.teleportFromAnywhere = config.getBoolean("PopulationDensity.TeleportFromAnywhere", false);
+		this.teleportNearbyAnimals = config.getBoolean("PopulationDensity.TeleportNearbyAnimals", false);
 		this.newPlayersSpawnInHomeRegion = config.getBoolean("PopulationDensity.NewPlayersSpawnInHomeRegion", true);
 		this.respawnInHomeRegion = config.getBoolean("PopulationDensity.RespawnInHomeRegion", true);
 		this.cityWorldName = config.getString("PopulationDensity.CityWorldName", "");
@@ -367,6 +369,7 @@ public class PopulationDensity extends JavaPlugin
 		outConfig.set("PopulationDensity.CityWorldName", this.cityWorldName);
 		outConfig.set("PopulationDensity.AllowTeleportation", this.allowTeleportation);
 		outConfig.set("PopulationDensity.TeleportFromAnywhere", this.teleportFromAnywhere);
+		outConfig.set("PopulationDensity.TeleportNearbyAnimals", this.teleportFromAnywhere);
 		outConfig.set("PopulationDensity.MaxDistanceFromSpawnToUseHomeRegion", this.maxDistanceFromSpawnToUseHomeRegion);
 		outConfig.set("PopulationDensity.ManagedWorldName", this.managedWorldName);
 		outConfig.set("PopulationDensity.DensityRatio", this.densityRatio);
@@ -773,9 +776,9 @@ public class PopulationDensity extends JavaPlugin
 				}
 				
 				if(result.nearPost && this.launchPlayer(player))
-				    new TeleportPlayerTask(player, block.getLocation(), false, instance).runTaskLater(this, 20L);
+				    new TeleportPlayerTask(player, block.getLocation(), false, instance, teleportNearbyAnimals).runTaskLater(this, 20L);
 				else
-				    new TeleportPlayerTask(player, block.getLocation(), false, instance).runTaskLater(this, 0L);
+				    new TeleportPlayerTask(player, block.getLocation(), false, instance, teleportNearbyAnimals).runTaskLater(this, 0L);
 			}
 			
 			return true;
@@ -1239,7 +1242,7 @@ public class PopulationDensity extends JavaPlugin
 		//drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
 		if (doDrop && !player.getGameMode().equals(GameMode.SPECTATOR))
 			teleportDestination = new Location(ManagedWorld, teleportDestination.getX(), ManagedWorld.getMaxHeight() + 10, teleportDestination.getZ(), player.getLocation().getYaw(), 90);
-		new TeleportPlayerTask(player, teleportDestination, doDrop, instance, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
+		new TeleportPlayerTask(player, teleportDestination, doDrop, instance, teleportNearbyAnimals, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
 		
 		//kill bad guys in the area
 		removeMonstersAround(teleportDestination);
