@@ -601,8 +601,12 @@ public class PopulationDensity extends JavaPlugin
 			CanTeleportResult result = this.playerCanTeleport(player, false);
 		    if(!result.canTeleport) return true;
 			
-			@SuppressWarnings("deprecation")
-            Player targetPlayer = this.getServer().getPlayerExact(args[0]);
+            Player targetPlayer = null;
+			for(Player p : this.getServer().getOnlinePlayers()) {
+				if(p.getName().equalsIgnoreCase(args[0]))
+					targetPlayer = p;
+			}
+
 			if(targetPlayer != null)
 			{
 			    PlayerData targetPlayerData = this.dataStore.getPlayerData(targetPlayer);
