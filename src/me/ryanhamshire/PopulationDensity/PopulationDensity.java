@@ -601,11 +601,7 @@ public class PopulationDensity extends JavaPlugin
 			CanTeleportResult result = this.playerCanTeleport(player, false);
 		    if(!result.canTeleport) return true;
 			
-            Player targetPlayer = null;
-			for(Player p : this.getServer().getOnlinePlayers()) {
-				if(p.getName().equalsIgnoreCase(args[0]))
-					targetPlayer = p;
-			}
+            Player targetPlayer = findPlayerByName(args[0]);
 
 			if(targetPlayer != null)
 			{
@@ -818,7 +814,7 @@ public class PopulationDensity extends JavaPlugin
 			
 			//send a notification to the invitee, if he's available
 			@SuppressWarnings("deprecation")
-            Player invitee = this.getServer().getPlayer(args[0]);			
+            Player invitee = findPlayerByName(args[0]);
 			if(invitee != null)
 			{
 				playerData = this.dataStore.getPlayerData(invitee);
@@ -845,7 +841,7 @@ public class PopulationDensity extends JavaPlugin
             if(args.length < 1) return false;
             
             @SuppressWarnings("deprecation")
-            Player targetPlayer = this.getServer().getPlayerExact(args[0]);
+            Player targetPlayer = findPlayerByName(args[0]);
             if(targetPlayer != null)
             {
                 playerData = this.dataStore.getPlayerData(targetPlayer);
@@ -1403,7 +1399,15 @@ public class PopulationDensity extends JavaPlugin
 		//note: 20L ~ 1 second
 		playerData.afkCheckTaskID = PopulationDensity.instance.getServer().getScheduler().scheduleSyncDelayedTask(PopulationDensity.instance, new AfkCheckTask(player, playerData), 20L * 60 * PopulationDensity.instance.maxIdleMinutes);
 	}
-	
+
+	private Player findPlayerByName(String name){
+		for(Player p : this.getServer().getOnlinePlayers()) {
+			if(p.getName().equalsIgnoreCase(name))
+				return p;
+		}
+		return null;
+	}
+
 	private OfflinePlayer resolvePlayer(String name) 
 	{
 		@SuppressWarnings("deprecation")
