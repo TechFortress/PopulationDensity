@@ -37,14 +37,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class PlayerEventHandler implements Listener {
 	private DataStore dataStore;
 	PopulationDensity instance;
+	private boolean teleportNearbyAnimals;
 
 	// queue of players waiting to join the server
 	public ArrayList<LoginQueueEntry> loginQueue = new ArrayList<LoginQueueEntry>();
 
 	// typical constructor, yawn
-	public PlayerEventHandler(DataStore dataStore, PopulationDensity plugin) {
+	public PlayerEventHandler(DataStore dataStore, PopulationDensity plugin, boolean teleportNearbyAnimals) {
 		this.dataStore = dataStore;
 		instance = plugin;
+		this.teleportNearbyAnimals = teleportNearbyAnimals;
 	}
 
 	// when a player attempts to join the server...

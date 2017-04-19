@@ -449,7 +449,7 @@ public class PopulationDensity extends JavaPlugin
 		visitCommand.setTabCompleter(this.dataStore);
 		
 		//player events, to control spawn, respawn, disconnect, and region-based notifications as players walk around
-		PlayerEventHandler playerEventHandler = new PlayerEventHandler(this.dataStore, this);
+		PlayerEventHandler playerEventHandler = new PlayerEventHandler(this.dataStore, this, teleportNearbyAnimals);
 		pluginManager.registerEvents(playerEventHandler, this);
 				
 		//block events, to limit building around region posts and in some other cases (config dependent)

@@ -52,34 +52,34 @@ class TeleportPlayerTask extends BukkitRunnable {
     @Override
     public void run() {
         ArrayList<Entity> entitiesToTeleport = new ArrayList<Entity>();
-        if (teleportNearbyAnimals) {
             List<Entity> nearbyEntities = player.getNearbyEntities(5, this.player.getWorld().getMaxHeight(), 5);
             for (Entity entity : nearbyEntities) {
-                if (entity instanceof Tameable && !(entity instanceof AbstractHorse)) {
-                    Tameable tameable = (Tameable) entity;
-                    if (tameable.isTamed()) {
-                        AnimalTamer tamer = tameable.getOwner();
-                        if (tamer != null && player.getUniqueId().equals(tamer.getUniqueId())) {
-                            EntityType type = entity.getType();
-                            if (type == EntityType.OCELOT) {
-                                Ocelot cat = (Ocelot) entity;
-                                if (cat.isSitting()) {
-                                    continue;
+                if(teleportNearbyAnimals) {
+                    if (entity instanceof Tameable && !(entity instanceof AbstractHorse)) {
+                        Tameable tameable = (Tameable) entity;
+                        if (tameable.isTamed()) {
+                            AnimalTamer tamer = tameable.getOwner();
+                            if (tamer != null && player.getUniqueId().equals(tamer.getUniqueId())) {
+                                EntityType type = entity.getType();
+                                if (type == EntityType.OCELOT) {
+                                    Ocelot cat = (Ocelot) entity;
+                                    if (cat.isSitting()) {
+                                        continue;
+                                    }
+                                } else if (type == EntityType.WOLF) {
+                                    Wolf dog = (Wolf) entity;
+                                    if (dog.isSitting()) {
+                                        continue;
+                                    }
                                 }
-                            } else if (type == EntityType.WOLF) {
-                                Wolf dog = (Wolf) entity;
-                                if (dog.isSitting()) {
-                                    continue;
-                                }
+
+                                entitiesToTeleport.add(entity);
                             }
-
-                            entitiesToTeleport.add(entity);
                         }
+                    } else if (entity instanceof Animals && !(entity instanceof AbstractHorse)) {
+                        entitiesToTeleport.add(entity);
                     }
-                } else if (entity instanceof Animals && !(entity instanceof AbstractHorse)) {
-                    entitiesToTeleport.add(entity);
                 }
-
                 if (entity instanceof LivingEntity) {
                     LivingEntity creature = (LivingEntity) entity;
                     if ((creature.isLeashed() && player.equals(creature.getLeashHolder())) || player.equals(creature.getPassenger())) {
@@ -87,7 +87,6 @@ class TeleportPlayerTask extends BukkitRunnable {
                     }
                 }
             }
-        }
 
         player.teleport(destination, TeleportCause.PLUGIN);
         if (this.makeFallDamageImmune) {
@@ -96,13 +95,12 @@ class TeleportPlayerTask extends BukkitRunnable {
 
         //sound effect
         player.playSound(destination, Sound.ENTITY_ENDERMEN_TELEPORT, 1f, 1f);
-        if (teleportNearbyAnimals)
-            for (Entity entity : entitiesToTeleport) {
-                if (!(entity instanceof LivingEntity)) continue;
-                LivingEntity livingEntity = (LivingEntity) entity;
-                if (this.makeFallDamageImmune)
-                    dropShipTeleporter.makeEntityFallDamageImmune(livingEntity);
-                entity.teleport(destination, TeleportCause.PLUGIN);
-            }
+        for (Entity entity : entitiesToTeleport) {
+            if (!(entity instanceof LivingEntity)) continue;
+            LivingEntity livingEntity = (LivingEntity) entity;
+            if (this.makeFallDamageImmune)
+                dropShipTeleporter.makeEntityFallDamageImmune(livingEntity);
+            entity.teleport(destination, TeleportCause.PLUGIN);
+        }
     }
 }
