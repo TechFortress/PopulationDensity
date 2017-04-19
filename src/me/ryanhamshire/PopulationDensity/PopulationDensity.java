@@ -84,6 +84,7 @@ public class PopulationDensity extends JavaPlugin
 	//user configuration, loaded/saved from a config.yml
 	public boolean allowTeleportation;
 	public boolean teleportFromAnywhere;
+	public boolean teleportNearbyAnimals;
 	public boolean newPlayersSpawnInHomeRegion;
 	public boolean respawnInHomeRegion;
 	public String cityWorldName;
@@ -186,6 +187,7 @@ public class PopulationDensity extends JavaPlugin
 		//read configuration settings (note defaults)
 		this.allowTeleportation = config.getBoolean("PopulationDensity.AllowTeleportation", true);
 		this.teleportFromAnywhere = config.getBoolean("PopulationDensity.TeleportFromAnywhere", false);
+		this.teleportNearbyAnimals = config.getBoolean("PopulationDensity.TeleportNearbyAnimals", false);
 		this.newPlayersSpawnInHomeRegion = config.getBoolean("PopulationDensity.NewPlayersSpawnInHomeRegion", true);
 		this.respawnInHomeRegion = config.getBoolean("PopulationDensity.RespawnInHomeRegion", true);
 		this.cityWorldName = config.getString("PopulationDensity.CityWorldName", "");
@@ -367,6 +369,7 @@ public class PopulationDensity extends JavaPlugin
 		outConfig.set("PopulationDensity.CityWorldName", this.cityWorldName);
 		outConfig.set("PopulationDensity.AllowTeleportation", this.allowTeleportation);
 		outConfig.set("PopulationDensity.TeleportFromAnywhere", this.teleportFromAnywhere);
+		outConfig.set("PopulationDensity.TeleportNearbyAnimals", this.teleportNearbyAnimals);
 		outConfig.set("PopulationDensity.MaxDistanceFromSpawnToUseHomeRegion", this.maxDistanceFromSpawnToUseHomeRegion);
 		outConfig.set("PopulationDensity.ManagedWorldName", this.managedWorldName);
 		outConfig.set("PopulationDensity.DensityRatio", this.densityRatio);
@@ -446,7 +449,7 @@ public class PopulationDensity extends JavaPlugin
 		visitCommand.setTabCompleter(this.dataStore);
 		
 		//player events, to control spawn, respawn, disconnect, and region-based notifications as players walk around
-		PlayerEventHandler playerEventHandler = new PlayerEventHandler(this.dataStore, this);
+		PlayerEventHandler playerEventHandler = new PlayerEventHandler(this.dataStore, this, teleportNearbyAnimals);
 		pluginManager.registerEvents(playerEventHandler, this);
 				
 		//block events, to limit building around region posts and in some other cases (config dependent)
@@ -601,8 +604,8 @@ public class PopulationDensity extends JavaPlugin
 			CanTeleportResult result = this.playerCanTeleport(player, false);
 		    if(!result.canTeleport) return true;
 			
-			@SuppressWarnings("deprecation")
-            Player targetPlayer = this.getServer().getPlayerExact(args[0]);
+            Player targetPlayer = findPlayerByName(args[0]);
+
 			if(targetPlayer != null)
 			{
 			    PlayerData targetPlayerData = this.dataStore.getPlayerData(targetPlayer);
@@ -773,9 +776,9 @@ public class PopulationDensity extends JavaPlugin
 				}
 				
 				if(result.nearPost && this.launchPlayer(player))
-				    new TeleportPlayerTask(player, block.getLocation(), false, instance).runTaskLater(this, 20L);
+				    new TeleportPlayerTask(player, block.getLocation(), false, instance, teleportNearbyAnimals).runTaskLater(this, 20L);
 				else
-				    new TeleportPlayerTask(player, block.getLocation(), false, instance).runTaskLater(this, 0L);
+				    new TeleportPlayerTask(player, block.getLocation(), false, instance, teleportNearbyAnimals).runTaskLater(this, 0L);
 			}
 			
 			return true;
@@ -814,7 +817,7 @@ public class PopulationDensity extends JavaPlugin
 			
 			//send a notification to the invitee, if he's available
 			@SuppressWarnings("deprecation")
-            Player invitee = this.getServer().getPlayer(args[0]);			
+            Player invitee = findPlayerByName(args[0]);
 			if(invitee != null)
 			{
 				playerData = this.dataStore.getPlayerData(invitee);
@@ -841,7 +844,7 @@ public class PopulationDensity extends JavaPlugin
             if(args.length < 1) return false;
             
             @SuppressWarnings("deprecation")
-            Player targetPlayer = this.getServer().getPlayerExact(args[0]);
+            Player targetPlayer = findPlayerByName(args[0]);
             if(targetPlayer != null)
             {
                 playerData = this.dataStore.getPlayerData(targetPlayer);
@@ -1239,7 +1242,7 @@ public class PopulationDensity extends JavaPlugin
 		//drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
 		if (doDrop && !player.getGameMode().equals(GameMode.SPECTATOR))
 			teleportDestination = new Location(ManagedWorld, teleportDestination.getX(), ManagedWorld.getMaxHeight() + 10, teleportDestination.getZ(), player.getLocation().getYaw(), 90);
-		new TeleportPlayerTask(player, teleportDestination, doDrop, instance, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
+		new TeleportPlayerTask(player, teleportDestination, doDrop, instance, teleportNearbyAnimals, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
 		
 		//kill bad guys in the area
 		removeMonstersAround(teleportDestination);
@@ -1399,7 +1402,15 @@ public class PopulationDensity extends JavaPlugin
 		//note: 20L ~ 1 second
 		playerData.afkCheckTaskID = PopulationDensity.instance.getServer().getScheduler().scheduleSyncDelayedTask(PopulationDensity.instance, new AfkCheckTask(player, playerData), 20L * 60 * PopulationDensity.instance.maxIdleMinutes);
 	}
-	
+
+	private Player findPlayerByName(String name){
+		for(Player p : this.getServer().getOnlinePlayers()) {
+			if(p.getName().equalsIgnoreCase(name))
+				return p;
+		}
+		return null;
+	}
+
 	private OfflinePlayer resolvePlayer(String name) 
 	{
 		@SuppressWarnings("deprecation")

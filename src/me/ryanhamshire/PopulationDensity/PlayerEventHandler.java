@@ -37,14 +37,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class PlayerEventHandler implements Listener {
 	private DataStore dataStore;
 	PopulationDensity instance;
+	private boolean teleportNearbyAnimals;
 
 	// queue of players waiting to join the server
 	public ArrayList<LoginQueueEntry> loginQueue = new ArrayList<LoginQueueEntry>();
 
 	// typical constructor, yawn
-	public PlayerEventHandler(DataStore dataStore, PopulationDensity plugin) {
+	public PlayerEventHandler(DataStore dataStore, PopulationDensity plugin, boolean teleportNearbyAnimals) {
 		this.dataStore = dataStore;
 		instance = plugin;
+		this.teleportNearbyAnimals = teleportNearbyAnimals;
 	}
 
 	// when a player attempts to join the server...
@@ -244,7 +246,7 @@ public class PlayerEventHandler implements Listener {
     			{
     			    // unless pop density is configured to force a precise world spawn point
     			    if(instance.preciseWorldSpawn)
-    			        new TeleportPlayerTask(joiningPlayer, joiningPlayer.getWorld().getSpawnLocation(), false, instance).runTaskLater(instance, 1L);
+    			        new TeleportPlayerTask(joiningPlayer, joiningPlayer.getWorld().getSpawnLocation(), false, instance, teleportNearbyAnimals).runTaskLater(instance, 1L);
     			    
     			    // always remove monsters around the new player's spawn point to prevent ambushes
     			    PopulationDensity.removeMonstersAround(joiningPlayer.getWorld().getSpawnLocation());
