@@ -472,23 +472,31 @@ public class DataStore implements TabCompleter
 			blockType = PopulationDensity.ManagedWorld.getBlockAt(x, --y, z).getType();
 		}
 		while(	y > 0 && (
-				blockType == Material.AIR 		|| 
-				blockType == Material.LEAVES 	|| 
-		        blockType == Material.LEAVES_2  ||
-				blockType == Material.LONG_GRASS||
-				blockType == Material.LOG       ||
-		        blockType == Material.LOG_2     ||
-				blockType == Material.SNOW 		||
-				blockType == Material.VINE					
-				));
+				blockType == Material.AIR 		     ||
+				blockType == Material.OAK_LEAVES     ||
+				blockType == Material.SPRUCE_LEAVES  ||
+				blockType == Material.BIRCH_LEAVES   ||
+				blockType == Material.JUNGLE_LEAVES  ||
+				blockType == Material.ACACIA_LEAVES  ||
+				blockType == Material.DARK_OAK_LEAVES||
+				blockType == Material.TALL_GRASS     ||
+				blockType == Material.OAK_LOG        ||
+				blockType == Material.SPRUCE_LOG     ||
+				blockType == Material.BIRCH_LOG      ||
+				blockType == Material.JUNGLE_LOG     ||
+				blockType == Material.ACACIA_LOG     ||
+				blockType == Material.DARK_OAK_LOG   ||
+				blockType == Material.SNOW 		     ||
+				blockType == Material.VINE
+		));
 				
-		if(blockType == Material.SIGN_POST)
+		if(blockType == Material.SIGN)
 		{
 		    y -= 4;
 		}
-		else if(blockType == Material.GLOWSTONE || (blockType == Material.getMaterial(PopulationDensity.instance.postTopperId)))
+		else if(blockType == Material.GLOWSTONE || (blockType == PopulationDensity.instance.postTopperType))
 		{
-		    y -= 3;
+			y -= 3;
 		}
 		else if(blockType == Material.BEDROCK)
 		{
@@ -510,7 +518,7 @@ public class DataStore implements TabCompleter
 				for(int y1 = y + 1; y1 <= y + 5; y1++)
 				{
 					Block block = PopulationDensity.ManagedWorld.getBlockAt(x1, y1, z1);
-					if(block.getType() == Material.SIGN_POST || block.getType() == Material.SIGN || block.getType() == Material.WALL_SIGN)
+					if(block.getType() == Material.SIGN || block.getType() == Material.WALL_SIGN)
 						block.setType(Material.AIR);					
 				}
 			}
@@ -542,38 +550,38 @@ public class DataStore implements TabCompleter
 		}
 
 		//build top block
-        PopulationDensity.ManagedWorld.getBlockAt(x, y + 3, z).setTypeIdAndData(PopulationDensity.instance.postTopperId, PopulationDensity.instance.postTopperData.byteValue(), true);
-		
+		PopulationDensity.ManagedWorld.getBlockAt(x, y + 3, z).setType(PopulationDensity.instance.postTopperType);
+
 		//build outer platform
 		for(int x1 = x - 2; x1 <= x + 2; x1++)
 		{
 			for(int z1 = z - 2; z1 <= z + 2; z1++)
 			{
-				PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setTypeIdAndData(PopulationDensity.instance.outerPlatformId, PopulationDensity.instance.outerPlatformData.byteValue(), true);
+				PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.outerPlatformType);
 			}
 		}
-		
+
 		//build inner platform
-        for(int x1 = x - 1; x1 <= x + 1; x1++)
-        {
-            for(int z1 = z - 1; z1 <= z + 1; z1++)
-            {
-                PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setTypeIdAndData(PopulationDensity.instance.innerPlatformId, PopulationDensity.instance.innerPlatformData.byteValue(), true);
-            }
-        }
-        
-        //build lower center blocks
-        for(int y1 = y; y1 <= y + 2; y1++)
-        {
-            PopulationDensity.ManagedWorld.getBlockAt(x, y1, z).setTypeIdAndData(PopulationDensity.instance.postId, PopulationDensity.instance.postData.byteValue(), true);
-        }
+		for(int x1 = x - 1; x1 <= x + 1; x1++)
+		{
+			for(int z1 = z - 1; z1 <= z + 1; z1++)
+			{
+				PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.innerPlatformType);
+			}
+		}
+
+		//build lower center blocks
+		for(int y1 = y; y1 <= y + 2; y1++)
+		{
+			PopulationDensity.ManagedWorld.getBlockAt(x, y1, z).setType(PopulationDensity.instance.postType);
+		}
 		
 		//build a sign on top with region name (or wilderness if no name)
 		String regionName = this.getRegionName(region);
 		if(regionName == null) regionName = "Wilderness";
 		regionName = PopulationDensity.capitalize(regionName);
 		Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y + 4, z);
-		block.setType(Material.SIGN_POST);
+		block.setType(Material.SIGN);
 		
 		org.bukkit.block.Sign sign = (org.bukkit.block.Sign)block.getState();
 		sign.setLine(1, PopulationDensity.capitalize(regionName));
@@ -586,11 +594,12 @@ public class DataStore implements TabCompleter
 		regionName = PopulationDensity.capitalize(regionName);
 		
 		block = PopulationDensity.ManagedWorld.getBlockAt(x, y + 2, z - 1);
-		
+
 		org.bukkit.material.Sign signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 		signData.setFacingDirection(BlockFace.NORTH);
-		
-		block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+		block.setType(Material.WALL_SIGN);
+		block.setData(signData.getData());
 		
 		sign = (org.bukkit.block.Sign)block.getState();
 		
@@ -610,8 +619,9 @@ public class DataStore implements TabCompleter
 		
 		signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 		signData.setFacingDirection(BlockFace.WEST);
-		
-		block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+		block.setType(Material.WALL_SIGN);
+		block.setData(signData.getData());
 		
 		sign = (org.bukkit.block.Sign)block.getState();
 		
@@ -629,8 +639,9 @@ public class DataStore implements TabCompleter
 			
 			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 			signData.setFacingDirection(BlockFace.WEST);
-			
-			block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+			block.setType(Material.WALL_SIGN);
+			block.setData(signData.getData());
 			
 			sign = (org.bukkit.block.Sign)block.getState();
 			
@@ -651,8 +662,9 @@ public class DataStore implements TabCompleter
 		
 		signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 		signData.setFacingDirection(BlockFace.EAST);
-		
-		block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+		block.setType(Material.WALL_SIGN);
+		block.setData(signData.getData());
 		
 		sign = (org.bukkit.block.Sign)block.getState();
 		
@@ -669,8 +681,9 @@ public class DataStore implements TabCompleter
 			block = PopulationDensity.ManagedWorld.getBlockAt(x + 1, y + 3, z);
 			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 			signData.setFacingDirection(BlockFace.EAST);
-			
-			block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+			block.setType(Material.WALL_SIGN);
+			block.setData(signData.getData());
 			
 			sign = (org.bukkit.block.Sign)block.getState();
 			
@@ -691,8 +704,9 @@ public class DataStore implements TabCompleter
 		
 		signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 		signData.setFacingDirection(BlockFace.SOUTH);
-		
-		block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+		block.setType(Material.WALL_SIGN);
+		block.setData(signData.getData());
 		
 		sign = (org.bukkit.block.Sign)block.getState();
 		
@@ -711,8 +725,9 @@ public class DataStore implements TabCompleter
 
 			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 			signData.setFacingDirection(BlockFace.NORTH);
-			
-			block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+			block.setType(Material.WALL_SIGN);
+			block.setData(signData.getData());
 			
 			sign = (org.bukkit.block.Sign)block.getState();
 			
@@ -730,8 +745,9 @@ public class DataStore implements TabCompleter
 
 			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 			signData.setFacingDirection(BlockFace.WEST);
-			
-			block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+			block.setType(Material.WALL_SIGN);
+			block.setData(signData.getData());
 			
 			sign = (org.bukkit.block.Sign)block.getState();
 			
@@ -749,8 +765,9 @@ public class DataStore implements TabCompleter
 			
 			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 			signData.setFacingDirection(BlockFace.EAST);
-			
-			block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+			block.setType(Material.WALL_SIGN);
+			block.setData(signData.getData());
 			
 			sign = (org.bukkit.block.Sign)block.getState();
 			
@@ -768,8 +785,9 @@ public class DataStore implements TabCompleter
 			
 			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 			signData.setFacingDirection(BlockFace.NORTH);
-			
-			block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+			block.setType(Material.WALL_SIGN);
+			block.setData(signData.getData());
 			
 			sign = (org.bukkit.block.Sign)block.getState();
 			
@@ -787,8 +805,9 @@ public class DataStore implements TabCompleter
 			
 			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
 			signData.setFacingDirection(BlockFace.SOUTH);
-			
-			block.setTypeIdAndData(Material.WALL_SIGN.getId(), signData.getData(), false);
+
+			block.setType(Material.WALL_SIGN);
+			block.setData(signData.getData());
 			
 			sign = (org.bukkit.block.Sign)block.getState();
 			
