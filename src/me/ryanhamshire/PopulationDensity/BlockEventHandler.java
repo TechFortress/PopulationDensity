@@ -42,17 +42,60 @@ import org.bukkit.event.block.BlockPlaceEvent;
 
 public class BlockEventHandler implements Listener 
 {
-    private static Set<Material> alwaysBreakableMaterials = new HashSet<Material>(Arrays.asList(
-        Material.LONG_GRASS,
-        Material.DOUBLE_PLANT,
-        Material.LOG,
-        Material.LOG_2,
-        Material.LEAVES,
-        Material.LEAVES_2,
-        Material.RED_ROSE,
-        Material.YELLOW_FLOWER,
-        Material.SNOW_BLOCK
-    ));
+	private static Set<Material> alwaysBreakableMaterials = new HashSet<Material>(Arrays.asList(
+			Material.TALL_GRASS,
+			Material.ROSE_BUSH,
+			Material.LILAC,
+			Material.LARGE_FERN,
+			Material.PEONY,
+			Material.GRASS,
+			Material.FERN,
+			Material.DEAD_BUSH,
+			Material.OAK_LOG,
+			Material.SPRUCE_LOG,
+			Material.BIRCH_LOG,
+			Material.JUNGLE_LOG,
+			Material.ACACIA_LOG,
+			Material.DARK_OAK_LOG,
+			Material.OAK_LEAVES,
+			Material.SPRUCE_LEAVES,
+			Material.BIRCH_LEAVES,
+			Material.JUNGLE_LEAVES,
+			Material.ACACIA_LEAVES,
+			Material.DARK_OAK_LEAVES,
+			Material.POPPY,
+			Material.DANDELION,
+			Material.BLUE_ORCHID,
+			Material.ALLIUM,
+			Material.AZURE_BLUET,
+			Material.RED_TULIP,
+			Material.ORANGE_TULIP,
+			Material.WHITE_TULIP,
+			Material.PINK_TULIP,
+			Material.OXEYE_DAISY,
+			Material.BROWN_MUSHROOM,
+			Material.RED_MUSHROOM,
+			Material.SNOW_BLOCK
+	));
+
+	private static Set<Material> beds = new HashSet<Material>(Arrays.asList(
+			Material.WHITE_BED,
+			Material.ORANGE_BED,
+			Material.MAGENTA_BED,
+			Material.LIGHT_BLUE_BED,
+			Material.YELLOW_BED,
+			Material.LIME_BED,
+			Material.PINK_BED,
+			Material.GRAY_BED,
+			Material.LIGHT_GRAY_BED,
+			Material.CYAN_BED,
+			Material.PURPLE_BED,
+			Material.BLUE_BED,
+			Material.BROWN_BED,
+			Material.GREEN_BED,
+			Material.RED_BED,
+			Material.BLACK_BED
+	));
     
 	//when a player breaks a block...
 	@EventHandler(ignoreCancelled = true)
@@ -179,7 +222,7 @@ public class BlockEventHandler implements Listener
 		
 		//if bed or chest and player has not been reminded about /movein this play session
 		if(type == null) type = block.getType();
-		if(type == Material.BED || type == Material.CHEST)
+		if(BlockEventHandler.beds.contains(type) || type == Material.CHEST)
 		{
 			PlayerData playerData = PopulationDensity.instance.dataStore.getPlayerData(player);
 			if(playerData.advertisedMoveInThisSession) return;
@@ -199,7 +242,7 @@ public class BlockEventHandler implements Listener
         Player player = damageEvent.getPlayer();
         
         Block block = damageEvent.getBlock();
-        if(player == null || (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST)) return;
+        if(player == null || (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN)) return;
         
         //if the player is not in managed world, do nothing
         if(!player.getWorld().equals(PopulationDensity.ManagedWorld)) return;
