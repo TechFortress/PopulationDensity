@@ -1242,6 +1242,7 @@ public class PopulationDensity extends JavaPlugin
 			z = teleportDetination.getBlockZ() - center.getZ();
 		if((x > size || (-x) > size) || (z > size || (-z) > size)) {
 			PopulationDensity.sendMessage(player, TextMode.Err, Messages.OutsideWorldBorder);
+			return;
 		}
 
 		
