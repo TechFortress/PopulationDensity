@@ -178,6 +178,11 @@ public class MonitorPerformanceTask implements Runnable
                     if(count == null) count = 0;
                     
                     chunkEntityCounter.put(entityTypeID, count + 1);
+		    
+		    if(type instanceof LivingEntity && count > 100) {
+		    	entity.remove();
+			totalRemoved++;
+		    }
                     
                     if(type == EntityType.EXPERIENCE_ORB)
                     {
