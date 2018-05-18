@@ -12,6 +12,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
@@ -49,6 +50,14 @@ public class DropShipTeleporter implements Listener {
         if(isFallDamageImmune((Player)event.getEntity()))
         {
             event.setCancelled(true);
+        }
+    }
+   
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        if(isFallDamageImmune(player) && player.isOnGround()) {
+            removeFallDamageImmunity(player);
         }
     }
 
