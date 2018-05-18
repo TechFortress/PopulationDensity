@@ -1140,7 +1140,13 @@ public class PopulationDensity extends JavaPlugin
 		if(player.hasPermission("populationdensity.teleportanywhere")) return new CanTeleportResult(true);
 		
 		//disallow spamming commands to hover in the air
-        if(!player.isOnGround()) return new CanTeleportResult(false);
+        	if(!player.isOnGround()) {
+			if(player.getVehicle() == null) {
+				return new CanTeleportResult(false);
+			}
+			// Dismount them if they're riding
+			player.leaveVehicle();
+		}
 		
 		//if teleportation from anywhere is enabled, always allow it
 		if(this.teleportFromAnywhere) return new CanTeleportResult(true);
