@@ -858,7 +858,8 @@ public class DataStore implements TabCompleter
         this.addDefault(defaults, Messages.Lag, "lag", null);
         this.addDefault(defaults, Messages.RegionAlreadyNamed, "This region already has a name.  To REname, use /RenameRegion.", null);
         this.addDefault(defaults, Messages.HopperLimitReached, "To prevent server lag, hoppers are limited to {0} per chunk.", "0: maximum hoppers per chunk");
-        
+        this.addDefault(defaults, Messages.OutsideWorldBorder, "The region you are attempting to teleport to is outside the world border.", null);
+	
         //load the config file
         FileConfiguration config = YamlConfiguration.loadConfiguration(new File(messagesFilePath));
         
