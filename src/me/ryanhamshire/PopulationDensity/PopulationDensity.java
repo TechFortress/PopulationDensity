@@ -1234,6 +1234,15 @@ public class PopulationDensity extends JavaPlugin
 		teleportDestination.setX(teleportDestination.getBlockX() + 0.5D);
 		teleportDestination.setY(teleportDestination.getBlockY() + 1D);
 		teleportDestination.setZ(teleportDestination.getBlockZ() + 0.5D);
+		
+		// Check the world border
+		double size = border.getSize() / 2;
+		Location center = border.getCenter();
+		double x = teleportDestination.getBlockX() - center.getX(),
+			z = teleportDetination.getBlockZ() - center.getZ();
+		if((x > size || (-x) > size) || (z > size || (-z) > size)) {
+			PopulationDensity.sendMessage(player, TextMode.Err, Messages.OutsideWorldBorder);
+		}
 
 		
 		//drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
