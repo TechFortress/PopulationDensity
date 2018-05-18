@@ -217,7 +217,7 @@ public class BlockEventHandler implements Listener
         if(!pistonBlock.getWorld().equals(PopulationDensity.ManagedWorld)) return;
         
         RegionCoordinates pistonRegion = RegionCoordinates.fromLocation(pistonBlock.getLocation());
-        if(this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 6))
+        if(this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 12))
         {
             List<Block> blocks = event.getBlocks();
             for(Block block : blocks)
@@ -239,7 +239,7 @@ public class BlockEventHandler implements Listener
         if(!pistonBlock.getWorld().equals(PopulationDensity.ManagedWorld)) return;
         
         RegionCoordinates pistonRegion = RegionCoordinates.fromLocation(pistonBlock.getLocation());
-        if(this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 2))
+        if(this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 12))
         {
             List<Block> blocks = event.getBlocks();
             for(Block block : blocks)
