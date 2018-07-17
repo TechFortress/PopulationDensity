@@ -219,9 +219,9 @@ public class WorldEventHandler implements Listener
                 {
                     Block block = entity.getLocation().getBlock();
                     Material blockType = block.getType();
-                    if(blockType == Material.LONG_GRASS || blockType == Material.AIR)
+                    if(blockType == Material.GRASS || blockType == Material.AIR)
                     {
-                        block.setTypeIdAndData(31, (byte)2, false);  //fern
+                        block.setType(Material.FERN, false);
                     }
                 }
                 

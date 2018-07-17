@@ -120,7 +120,7 @@ class TeleportPlayerTask extends BukkitRunnable
 		}
 		
 		//sound effect
-        player.playSound(destination, Sound.ENTITY_ENDERMEN_TELEPORT, 1f, 1f);
+        player.playSound(destination, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
         
 		for(Entity entity : entitiesToTeleport)
 	    {

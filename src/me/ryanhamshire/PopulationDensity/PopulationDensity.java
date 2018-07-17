@@ -105,14 +105,10 @@ public class PopulationDensity extends JavaPlugin
 	public boolean preciseWorldSpawn;
 	public int woodMinimum;
     public int resourceMinimum;
-    public Integer postTopperId = 89;
-    public Integer postTopperData = 0;
-    public Integer postId = 89;
-    public Integer postData = 0;
-    public Integer outerPlatformId = 98;
-    public Integer outerPlatformData = 0;
-    public Integer innerPlatformId = 98;
-    public Integer innerPlatformData = 0;
+    public Material postTopper = Material.GLOWSTONE;
+    public Material post = Material.GLOWSTONE;
+    public Material outerPlatform = Material.STONE_BRICKS;
+    public Material innerPlatform = Material.STONE_BRICKS;
     public int nearbyMonsterSpawnLimit;
     public int maxRegionNameLength = 10;
     public boolean abandonedFarmAnimalsDie;
@@ -233,113 +229,99 @@ public class PopulationDensity extends JavaPlugin
 		this.markRemovedEntityLocations = config.getBoolean("PopulationDensity.MarkRemovedAnimalLocationsWithShrubs", true);
 		this.removeWildSkeletalHorses = config.getBoolean("PopulationDensity.Remove Wild Skeletal Horses", true);
 		
-		SimpleEntry<Integer, Integer> result;
-		result = this.processMaterials(topper);
-		if(result != null)
-		{
-		    this.postTopperId = result.getKey();
-		    this.postTopperData = result.getValue();
-		}
-		result = this.processMaterials(post);
-		if(result != null)
-        {
-            this.postId = result.getKey();
-            this.postData = result.getValue();
-        }
-		result = this.processMaterials(outerPlat);
-		if(result != null)
-        {
-            this.outerPlatformId = result.getKey();
-            this.outerPlatformData = result.getValue();
-        }
-		result = this.processMaterials(innerPlat);
-		if(result != null)
-        {
-            this.innerPlatformId = result.getKey();
-            this.innerPlatformData = result.getValue();
-        }
+                Material material = Material.getMaterial(topper);
+                if (material != null) this.postTopper = material;
+                
+		material = Material.getMaterial(post);
+                if (material != null) this.post = material;
+                
+                material = Material.getMaterial(outerPlat);
+                if (material != null) this.outerPlatform = material;
+                
+                material = Material.getMaterial(innerPlat);
+                if (material != null) this.innerPlatform = material;
 		
 		List <String> defaultRegionNames = Arrays.asList(
-            "redstone",
-            "dew",
-            "creeper",
-            "sword",
-            "wintersebb",
-            "fjord",
-            "vista",
-            "breeze",
-            "tide",
-            "stream",
-            "glenwood",
-            "journey",
-            "cragstone",
-            "pickaxe",
-            "axe",
-            "hammer",
-            "anvil",
-            "mist",
-            "sunrise",
-            "sunset",
-            "copper",
-            "coal",
-            "shovel",
-            "minecart",
-            "railway",
-            "dig",
-            "chasm",
-            "basalt",
-            "agate",
-            "boat",
-            "grass",
-            "gust",
-            "ruby",
-            "emerald",
-            "stone",
-            "peak",
-            "ore",
-            "boulder",
-            "hilltop",
-            "horizon",
-            "fog",
-            "cloud",
-            "canopy",
-            "gravel",
-            "torch",
-            "obsidian",
-            "treetop",
-            "storm",
-            "gold",
-            "canopy",
-            "leaf",
-            "summit",
-            "glade",
-            "trail",
-            "seed",
-            "diamond",
-            "armor",
-            "sand",
-            "flint",
-            "field",
-            "steel",
-            "helm",
-            "gorge",
-            "campfire",
-            "workshop",
-            "rubble",
-            "iron",
-            "chisel",
-            "moon",
-            "shrub",
-            "zombie",
-            "stem",
-            "vale",
-            "pumpkin",
-            "lantern",
-            "copper",
-            "moonBeam",
-            "soil",
-            "dust"
-        );
+                    "redstone",
+                    "dew",
+                    "creeper",
+                    "sword",
+                    "wintersebb",
+                    "fjord",
+                    "vista",
+                    "breeze",
+                    "tide",
+                    "stream",
+                    "glenwood",
+                    "journey",
+                    "cragstone",
+                    "pickaxe",
+                    "axe",
+                    "hammer",
+                    "anvil",
+                    "mist",
+                    "sunrise",
+                    "sunset",
+                    "copper",
+                    "coal",
+                    "shovel",
+                    "minecart",
+                    "railway",
+                    "dig",
+                    "chasm",
+                    "basalt",
+                    "agate",
+                    "boat",
+                    "grass",
+                    "gust",
+                    "ruby",
+                    "emerald",
+                    "stone",
+                    "peak",
+                    "ore",
+                    "boulder",
+                    "hilltop",
+                    "horizon",
+                    "fog",
+                    "cloud",
+                    "canopy",
+                    "gravel",
+                    "torch",
+                    "obsidian",
+                    "treetop",
+                    "storm",
+                    "gold",
+                    "canopy",
+                    "leaf",
+                    "summit",
+                    "glade",
+                    "trail",
+                    "seed",
+                    "diamond",
+                    "armor",
+                    "sand",
+                    "flint",
+                    "field",
+                    "steel",
+                    "helm",
+                    "gorge",
+                    "campfire",
+                    "workshop",
+                    "rubble",
+                    "iron",
+                    "chisel",
+                    "moon",
+                    "shrub",
+                    "zombie",
+                    "stem",
+                    "vale",
+                    "pumpkin",
+                    "lantern",
+                    "copper",
+                    "moonBeam",
+                    "soil",
+                    "dust"
+                );
 		
 		this.config_regionNames = new ArrayList<String>();
 		List<String> regionNames = config.getStringList("PopulationDensity.Region Name List");
@@ -1312,7 +1294,7 @@ public class PopulationDensity extends JavaPlugin
     					for(int y = 0; y < ManagedWorld.getMaxHeight(); y++)
     					{
     						//if we find something, save the snapshot to the snapshot array
-    						if(snapshot.getBlockTypeId(0, y, 0) != Material.AIR.getId())
+    						if(snapshot.getBlockType(0, y, 0) != Material.AIR)
     						{
     							foundNonAir = true;
     							snapshots[x][z] = snapshot;

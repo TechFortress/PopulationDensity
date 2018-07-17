@@ -43,14 +43,35 @@ import org.bukkit.event.block.BlockPlaceEvent;
 public class BlockEventHandler implements Listener 
 {
     private static Set<Material> alwaysBreakableMaterials = new HashSet<Material>(Arrays.asList(
-        Material.LONG_GRASS,
-        Material.DOUBLE_PLANT,
-        Material.LOG,
-        Material.LOG_2,
-        Material.LEAVES,
-        Material.LEAVES_2,
-        Material.RED_ROSE,
-        Material.YELLOW_FLOWER,
+        Material.GRASS,
+        Material.SUNFLOWER,
+        Material.LILAC,
+        Material.ROSE_BUSH,
+        Material.PEONY,
+        Material.TALL_GRASS,
+        Material.LARGE_FERN,
+        Material.OAK_LOG,
+        Material.SPRUCE_LOG,
+        Material.BIRCH_LOG,
+        Material.JUNGLE_LOG,
+        Material.ACACIA_LOG,
+        Material.DARK_OAK_LOG,
+        Material.OAK_LEAVES,
+        Material.SPRUCE_LEAVES,
+        Material.BIRCH_LEAVES,
+        Material.JUNGLE_LEAVES,
+        Material.ACACIA_LEAVES,
+        Material.DARK_OAK_LEAVES,
+        Material.DANDELION,
+        Material.POPPY,
+        Material.BLUE_ORCHID,
+        Material.ALLIUM,
+        Material.AZURE_BLUET,
+        Material.RED_TULIP,
+        Material.ORANGE_TULIP,
+        Material.WHITE_TULIP,
+        Material.PINK_TULIP,
+        Material.OXEYE_DAISY,
         Material.SNOW_BLOCK
     ));
     
@@ -179,7 +200,23 @@ public class BlockEventHandler implements Listener
 		
 		//if bed or chest and player has not been reminded about /movein this play session
 		if(type == null) type = block.getType();
-		if(type == Material.BED || type == Material.CHEST)
+		if(     type == Material.WHITE_BED ||
+                        type == Material.ORANGE_BED ||
+                        type == Material.MAGENTA_BED ||
+                        type == Material.LIGHT_BLUE_BED ||
+                        type == Material.YELLOW_BED ||
+                        type == Material.LIME_BED ||
+                        type == Material.PINK_BED ||
+                        type == Material.GRAY_BED ||
+                        type == Material.LIGHT_GRAY_BED ||
+                        type == Material.CYAN_BED ||
+                        type == Material.PURPLE_BED ||
+                        type == Material.BLUE_BED ||
+                        type == Material.BROWN_BED ||
+                        type == Material.GREEN_BED ||
+                        type == Material.RED_BED ||
+                        type == Material.BLACK_BED ||
+                        type == Material.CHEST)
 		{
 			PlayerData playerData = PopulationDensity.instance.dataStore.getPlayerData(player);
 			if(playerData.advertisedMoveInThisSession) return;
@@ -199,7 +236,7 @@ public class BlockEventHandler implements Listener
         Player player = damageEvent.getPlayer();
         
         Block block = damageEvent.getBlock();
-        if(player == null || (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN_POST)) return;
+        if(player == null || (block.getType() != Material.WALL_SIGN && block.getType() != Material.SIGN)) return;
         
         //if the player is not in managed world, do nothing
         if(!player.getWorld().equals(PopulationDensity.ManagedWorld)) return;
