@@ -36,6 +36,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
+import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.*;
@@ -1241,11 +1242,12 @@ public class PopulationDensity extends JavaPlugin
 		teleportDestination.setY(teleportDestination.getBlockY() + 1D);
 		teleportDestination.setZ(teleportDestination.getBlockZ() + 0.5D);
 		
-		// Check the world border
+                // Check the world border
+                WorldBorder border = teleportDestination.getWorld().getWorldBorder();
 		double size = border.getSize() / 2;
 		Location center = border.getCenter();
 		double x = teleportDestination.getBlockX() - center.getX(),
-			z = teleportDetination.getBlockZ() - center.getZ();
+                       z = teleportDestination.getBlockZ() - center.getZ();
 		if((x > size || (-x) > size) || (z > size || (-z) > size)) {
 			PopulationDensity.sendMessage(player, TextMode.Err, Messages.OutsideWorldBorder);
 			return;
