@@ -68,7 +68,7 @@ public class EntityEventHandler implements Listener
 	        allowedSpawnBlocks = new HashMap<Environment, HashSet<Material>>();
 	    
 	        allowedSpawnBlocks.put(Environment.NORMAL, new HashSet<Material>(Arrays.asList(
-    	        Material.GRASS,
+    	        Material.GRASS_BLOCK,
     	        Material.SAND,
     	        Material.GRAVEL,
     	        Material.STONE,
@@ -171,7 +171,7 @@ public class EntityEventHandler implements Listener
 		
 		//only plant trees in grass or dirt
 		Block underBlock = block.getRelative(BlockFace.DOWN);
-		if(underBlock.getType() == Material.GRASS || underBlock.getType() == Material.DIRT)
+		if(underBlock.getType() == Material.GRASS_BLOCK || underBlock.getType() == Material.DIRT)
 		{
 			block.setType(item.getType(), false);
 		}
@@ -273,7 +273,7 @@ public class EntityEventHandler implements Listener
     			
     			//if it's on grass, there's a 1/100 chance it will also spawn a group of animals
     			Block underBlock = event.getLocation().getBlock().getRelative(BlockFace.DOWN);
-    			if(underBlock.getType() == Material.GRASS && --this.respawnAnimalCounter == 0)
+    			if(underBlock.getType() == Material.GRASS_BLOCK && --this.respawnAnimalCounter == 0)
     			{
     				this.respawnAnimalCounter = 5;
     				
@@ -332,13 +332,12 @@ public class EntityEventHandler implements Listener
             {
                 toHandle = center.getWorld().getBlockAt(center.getX() + x, center.getY() + 2, center.getZ() + z);
                 while(toHandle.getType() == Material.AIR && toHandle.getY() > center.getY() - 4) toHandle = toHandle.getRelative(BlockFace.DOWN);
-                if (toHandle.getType() == Material.GRASS) // Block is grass
+                if (toHandle.getType() == Material.GRASS_BLOCK) // Block is grass
                 {
                     Block aboveBlock = toHandle.getRelative(BlockFace.UP);
                     if(aboveBlock.getType() == Material.AIR)
                     {
                     	aboveBlock.setType(Material.GRASS, false);
-                        aboveBlock.setData((byte) 1);  //data == 1 means live grass instead of dead shrub
                     }
                     continue;
                 }
