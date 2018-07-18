@@ -210,7 +210,25 @@ public class ScanRegionTask extends Thread
 						material != Material.BLACK_TERRACOTTA &&
 						material != Material.TERRACOTTA && // ??
 						material != Material.SUGAR_CANE &&
-						material != Material.PACKED_ICE)
+						material != Material.PACKED_ICE &&
+                                                material != Material.SEAGRASS &&
+                                                material != Material.TALL_SEAGRASS &&
+                                                material != Material.SEA_PICKLE &&
+                                                material != Material.TUBE_CORAL &&
+                                                material != Material.BRAIN_CORAL &&
+                                                material != Material.BUBBLE_CORAL &&
+                                                material != Material.FIRE_CORAL &&
+                                                material != Material.HORN_CORAL &&
+                                                material != Material.TUBE_CORAL_BLOCK &&
+                                                material != Material.BRAIN_CORAL_BLOCK &&
+                                                material != Material.BUBBLE_CORAL_BLOCK &&
+                                                material != Material.FIRE_CORAL_BLOCK &&
+                                                material != Material.HORN_CORAL_BLOCK &&
+                                                material != Material.TUBE_CORAL_FAN &&
+                                                material != Material.BRAIN_CORAL_FAN &&
+                                                material != Material.BUBBLE_CORAL_FAN &&
+                                                material != Material.FIRE_CORAL_FAN &&
+                                                material != Material.HORN_CORAL_FAN)
 				{
 					playerBlocks++;
 				}
