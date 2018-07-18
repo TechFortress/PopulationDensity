@@ -189,6 +189,9 @@ public class ScanRegionTask extends Thread
 						material != Material.SANDSTONE &&
 						material != Material.SNOW &&
 						material != Material.STONE &&
+                                                material != Material.GRANITE &&
+                                                material != Material.DIORITE &&
+                                                material != Material.ANDESITE &&
 						material != Material.VINE &&
 						material != Material.LILY_PAD &&
 						material != Material.MOSSY_COBBLESTONE && 
@@ -228,7 +231,8 @@ public class ScanRegionTask extends Thread
                                                 material != Material.BRAIN_CORAL_FAN &&
                                                 material != Material.BUBBLE_CORAL_FAN &&
                                                 material != Material.FIRE_CORAL_FAN &&
-                                                material != Material.HORN_CORAL_FAN)
+                                                material != Material.HORN_CORAL_FAN &&
+                                                material != Material.KELP_PLANT)
 				{
 					playerBlocks++;
 				}
