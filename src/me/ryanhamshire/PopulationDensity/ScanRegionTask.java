@@ -111,6 +111,8 @@ public class ScanRegionTask extends Thread
 			
 			//if it's not a pass-through block
 			if(		material != Material.AIR && 
+                                        material != Material.CAVE_AIR && 
+                                        material != Material.BUBBLE_COLUMN &&
 					material != Material.OAK_DOOR && 
 					material != Material.SPRUCE_DOOR && 
 					material != Material.BIRCH_DOOR && 
@@ -148,6 +150,8 @@ public class ScanRegionTask extends Thread
 						material != Material.CACTUS &&
 						material != Material.DEAD_BUSH && 
 						material != Material.DIRT &&
+                                                material != Material.PODZOL &&
+                                                material != Material.COARSE_DIRT &&
 						material != Material.GRAVEL &&
 						material != Material.GRASS &&
                                                 material != Material.GRASS_BLOCK &&
@@ -157,6 +161,7 @@ public class ScanRegionTask extends Thread
 						material != Material.LAPIS_ORE &&
 						material != Material.OBSIDIAN &&
 						material != Material.RED_MUSHROOM &&
+                                                material != Material.FERN &&
 						material != Material.DANDELION &&
 						material != Material.POPPY &&
 						material != Material.BLUE_ORCHID &&
