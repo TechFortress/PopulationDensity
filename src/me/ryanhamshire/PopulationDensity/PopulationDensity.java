@@ -26,15 +26,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.ChunkSnapshot;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -104,14 +96,10 @@ public class PopulationDensity extends JavaPlugin
 	public boolean preciseWorldSpawn;
 	public int woodMinimum;
     public int resourceMinimum;
-    public Integer postTopperId = 89;
-    public Integer postTopperData = 0;
-    public Integer postId = 89;
-    public Integer postData = 0;
-    public Integer outerPlatformId = 98;
-    public Integer outerPlatformData = 0;
-    public Integer innerPlatformId = 98;
-    public Integer innerPlatformData = 0;
+    public Material postTopperMaterial = Material.GLOWSTONE;
+    public Material postMaterial = Material.GLOWSTONE;
+    public Material outerPlatformMaterial = Material.STONE_BRICKS;
+    public Material innerPlatformMaterial = Material.STONE_BRICKS;
     public int nearbyMonsterSpawnLimit;
     public int maxRegionNameLength = 10;
     public boolean abandonedFarmAnimalsDie;
@@ -129,7 +117,10 @@ public class PopulationDensity extends JavaPlugin
         boolean config_launchAndDropNewPlayers;
 	
 	public int minimumRegionPostY;
-	
+
+	public String [] topSignContent;
+	public String [] sideSignContent;
+	public String [] instructionsSignContent;
 	public String [] mainCustomSignContent;
 	public String [] northCustomSignContent;
 	public String [] southCustomSignContent;
@@ -221,42 +212,36 @@ public class PopulationDensity extends JavaPlugin
 		this.config_launchAndDropNewPlayers = config.getBoolean("PopulationDensity.LaunchAndDropNewPlayers", config_launchAndDropPlayers);
 
 		
-		String topper = config.getString("PopulationDensity.PostDesign.TopBlock", "89:0");  //default glowstone
-		String post = config.getString("PopulationDensity.PostDesign.PostBlocks", "89:0");
-		String outerPlat = config.getString("PopulationDensity.PostDesign.PlatformOuterRing", "98:0");  //default stone brick
-		String innerPlat = config.getString("PopulationDensity.PostDesign.PlatformInnerRing", "98:0");
+		String topper = config.getString("PopulationDensity.PostDesign.TopBlock", "GLOWSTONE");  //default glowstone
+		String post = config.getString("PopulationDensity.PostDesign.PostBlocks", "GLOWSTONE");
+		String outerPlat = config.getString("PopulationDensity.PostDesign.PlatformOuterRing", "STONE_BRICKS");  //default stone brick
+		String innerPlat = config.getString("PopulationDensity.PostDesign.PlatformInnerRing", "STONE_BRICKS");
 		this.nearbyMonsterSpawnLimit = config.getInt("PopulationDensity.Max Monsters In Chunk To Spawn More", 2);
 		this.nearbyMonsterSpawnLimit = config.getInt("PopulationDensity.Max Monsters Nearby For More To Spawn", nearbyMonsterSpawnLimit);
 		this.abandonedFarmAnimalsDie = config.getBoolean("PopulationDensity.Abandoned Farm Animals Die", true);
 		this.unusedMinecartsVanish = config.getBoolean("PopulationDensity.Unused Minecarts Vanish", true);
 		this.markRemovedEntityLocations = config.getBoolean("PopulationDensity.MarkRemovedAnimalLocationsWithShrubs", true);
 		this.removeWildSkeletalHorses = config.getBoolean("PopulationDensity.Remove Wild Skeletal Horses", true);
-		
-		SimpleEntry<Integer, Integer> result;
-		result = this.processMaterials(topper);
-		if(result != null)
-		{
-		    this.postTopperId = result.getKey();
-		    this.postTopperData = result.getValue();
+
+		Material resultT = this.processMaterials(topper);
+		if (resultT != null) {
+			this.postTopperMaterial = resultT;
 		}
-		result = this.processMaterials(post);
-		if(result != null)
-        {
-            this.postId = result.getKey();
-            this.postData = result.getValue();
-        }
-		result = this.processMaterials(outerPlat);
-		if(result != null)
-        {
-            this.outerPlatformId = result.getKey();
-            this.outerPlatformData = result.getValue();
-        }
-		result = this.processMaterials(innerPlat);
-		if(result != null)
-        {
-            this.innerPlatformId = result.getKey();
-            this.innerPlatformData = result.getValue();
-        }
+
+		Material resultP = this.processMaterials(post);
+		if (resultP != null) {
+			this.postMaterial = resultP;
+		}
+
+		Material resultO = this.processMaterials(outerPlat);
+		if (resultO != null) {
+			this.outerPlatformMaterial = resultO;
+		}
+
+		Material resultI = this.processMaterials(innerPlat);
+		if (resultI != null) {
+			this.innerPlatformMaterial = resultI;
+		}
 		
 		List <String> defaultRegionNames = Arrays.asList(
             "redstone",
@@ -407,6 +392,10 @@ public class PopulationDensity extends JavaPlugin
         outConfig.set("PopulationDensity.Region Name List", regionNames);
 		
 		//this is a combination load/preprocess/save for custom signs on the region posts
+		this.topSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.Signs.Top", new String [] {"", "%regionName%", "Region", ""});
+		this.sideSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.Signs.Side", new String [] {"<--", "%regionName%", "Region", "<--"});
+		this.instructionsSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.Signs.Instructions", new String [] {"Teleport", "From Here!", "Punch For", "Instructions"});
+
 		this.mainCustomSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.CustomSigns.Main", new String [] {"", "Population", "Density", ""});
 		this.northCustomSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.CustomSigns.North", new String [] {"", "", "", ""});
 		this.southCustomSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.CustomSigns.South", new String [] {"", "", "", ""});
@@ -1251,6 +1240,17 @@ public class PopulationDensity extends JavaPlugin
 			return;
 		}
 
+		// Check the world border
+		WorldBorder border = ManagedWorld.getWorldBorder();
+		double size = border.getSize() / 2;
+		Location center = border.getCenter();
+		double x = teleportDestination.getBlockX() - center.getX(),
+			z = teleportDestination.getBlockZ() - center.getZ();
+		if((x > size || (-x) > size) || (z > size || (-z) > size)) {
+			PopulationDensity.sendMessage(player, TextMode.Err, Messages.OutsideWorldBorder);
+			return;
+		}
+
 		
 		//drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
 		if (doDrop && !player.getGameMode().equals(GameMode.SPECTATOR))
@@ -1310,7 +1310,7 @@ public class PopulationDensity extends JavaPlugin
     					for(int y = 0; y < ManagedWorld.getMaxHeight(); y++)
     					{
     						//if we find something, save the snapshot to the snapshot array
-    						if(snapshot.getBlockTypeId(0, y, 0) != Material.AIR.getId())
+    						if(snapshot.getBlockType(0, y, 0) != Material.AIR)
     						{
     							foundNonAir = true;
     							snapshots[x][z] = snapshot;
@@ -1454,28 +1454,14 @@ public class PopulationDensity extends JavaPlugin
             }
         }
 	}
-	
-	private SimpleEntry<Integer, Integer> processMaterials(String string)
+
+	private Material processMaterials(String string)
 	{
-        String [] elements = string.split(":");
-        if(elements.length < 2)
-        {
-            PopulationDensity.AddLogEntry("Couldn't understand config entry '" + string + "'.  Use format 'id:data'.");
-            return null;
-        }
-        
-        try
-        {
-            int id_output = Integer.parseInt(elements[0]);
-            int data_output = Integer.parseInt(elements[1]);
-            return new SimpleEntry<Integer, Integer>(id_output, data_output);
-        }
-        catch(NumberFormatException e)
-        {
-            PopulationDensity.AddLogEntry("Couldn't understand config entry '" + string + "'.  Use format 'id:data'.");
-        }
-        
-        return null;
+        Material material = Material.getMaterial(string);
+        if (material == null) {
+			AddLogEntry("Error: Couldn't resolve material \""+string+"\". Please update your config.yml.");
+		}
+		return material;
     }
 	
 	//sends a color-coded message to a player

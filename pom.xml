@@ -6,10 +6,10 @@
 
     <groupId>me.ryanhamshire</groupId>
     <artifactId>PopulationDensity</artifactId>
-    <version>5.10</version>
+    <version>6.0</version>
     <properties>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <repositories>
         <repository>
@@ -46,7 +46,7 @@
         <dependency>
                  <groupId>org.bukkit</groupId>
                  <artifactId>bukkit</artifactId>
-                 <version>1.12.2-R0.1-SNAPSHOT</version>
+                 <version>1.13-R0.1-SNAPSHOT</version>
                  <scope>provided</scope>
         </dependency>
         <!--Google stuff-->

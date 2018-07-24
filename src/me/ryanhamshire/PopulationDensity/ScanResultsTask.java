@@ -17,14 +17,10 @@ public class ScanResultsTask implements Runnable
 	@Override
 	public void run() 
 	{
-		StringBuilder builder = new StringBuilder();
-	    for(String entry : this.logEntries)
-		{
-			builder.append(entry).append("\n");
+		for (String entry : this.logEntries) {
+			PopulationDensity.AddLogEntry(entry);
 		}
-	    
-	    PopulationDensity.AddLogEntry(builder.toString());
-		
+
 		if(this.openNewRegion)
 		{
 			RegionCoordinates newRegion = PopulationDensity.instance.dataStore.addRegion();
