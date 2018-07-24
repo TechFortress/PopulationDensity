@@ -42,7 +42,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 
 public class BlockEventHandler implements Listener 
 {
-	private static Set<Material> alwaysBreakableMaterials = new HashSet<Material>(Arrays.asList(
+    private static Set<Material> alwaysBreakableMaterials = new HashSet<Material>(Arrays.asList(
 			Material.TALL_GRASS,
 			Material.ROSE_BUSH,
 			Material.LILAC,
@@ -222,7 +222,7 @@ public class BlockEventHandler implements Listener
 		
 		//if bed or chest and player has not been reminded about /movein this play session
 		if(type == null) type = block.getType();
-		if(BlockEventHandler.beds.contains(type) || type == Material.CHEST)
+		if(beds.contains(type) || type == Material.CHEST)
 		{
 			PlayerData playerData = PopulationDensity.instance.dataStore.getPlayerData(player);
 			if(playerData.advertisedMoveInThisSession) return;
@@ -260,7 +260,7 @@ public class BlockEventHandler implements Listener
         if(!pistonBlock.getWorld().equals(PopulationDensity.ManagedWorld)) return;
         
         RegionCoordinates pistonRegion = RegionCoordinates.fromLocation(pistonBlock.getLocation());
-        if(this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 6))
+        if(this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 12))
         {
             List<Block> blocks = event.getBlocks();
             for(Block block : blocks)
@@ -282,7 +282,7 @@ public class BlockEventHandler implements Listener
         if(!pistonBlock.getWorld().equals(PopulationDensity.ManagedWorld)) return;
         
         RegionCoordinates pistonRegion = RegionCoordinates.fromLocation(pistonBlock.getLocation());
-        if(this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 2))
+        if(this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 12))
         {
             List<Block> blocks = event.getBlocks();
             for(Block block : blocks)

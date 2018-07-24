@@ -27,6 +27,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.SkeletonHorse;
 import org.bukkit.entity.Tameable;
@@ -205,7 +206,6 @@ public class WorldEventHandler implements Listener
         }
     }
 
-    @SuppressWarnings("deprecation")
     static void removeAbandonedEntities(Chunk chunk)
     {
         Entity [] entities = chunk.getEntities();

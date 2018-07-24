@@ -28,6 +28,7 @@ import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -471,32 +472,31 @@ public class DataStore implements TabCompleter
 		{
 			blockType = PopulationDensity.ManagedWorld.getBlockAt(x, --y, z).getType();
 		}
-		while(	y > 0 && (
-				blockType == Material.AIR 		     ||
-				blockType == Material.OAK_LEAVES     ||
-				blockType == Material.SPRUCE_LEAVES  ||
-				blockType == Material.BIRCH_LEAVES   ||
-				blockType == Material.JUNGLE_LEAVES  ||
-				blockType == Material.ACACIA_LEAVES  ||
-				blockType == Material.DARK_OAK_LEAVES||
-				blockType == Material.TALL_GRASS     ||
-				blockType == Material.OAK_LOG        ||
-				blockType == Material.SPRUCE_LOG     ||
-				blockType == Material.BIRCH_LOG      ||
-				blockType == Material.JUNGLE_LOG     ||
-				blockType == Material.ACACIA_LOG     ||
-				blockType == Material.DARK_OAK_LOG   ||
-				blockType == Material.SNOW 		     ||
-				blockType == Material.VINE
-		));
+		while(	y > 0 && (blockType == Material.AIR 		 ||
+						blockType == Material.OAK_LEAVES     ||
+						blockType == Material.SPRUCE_LEAVES  ||
+						blockType == Material.BIRCH_LEAVES   ||
+						blockType == Material.JUNGLE_LEAVES  ||
+						blockType == Material.ACACIA_LEAVES  ||
+						blockType == Material.DARK_OAK_LEAVES||
+						blockType == Material.TALL_GRASS     ||
+						blockType == Material.OAK_LOG        ||
+						blockType == Material.SPRUCE_LOG     ||
+						blockType == Material.BIRCH_LOG      ||
+						blockType == Material.JUNGLE_LOG     ||
+						blockType == Material.ACACIA_LOG     ||
+						blockType == Material.DARK_OAK_LOG   ||
+						blockType == Material.SNOW 		     ||
+						blockType == Material.VINE
+				));
 				
 		if(blockType == Material.SIGN)
 		{
 		    y -= 4;
 		}
-		else if(blockType == Material.GLOWSTONE || (blockType == PopulationDensity.instance.postTopperType))
+		else if(blockType == Material.GLOWSTONE || (blockType == PopulationDensity.instance.postTopperMaterial))
 		{
-			y -= 3;
+		    y -= 3;
 		}
 		else if(blockType == Material.BEDROCK)
 		{
@@ -550,274 +550,154 @@ public class DataStore implements TabCompleter
 		}
 
 		//build top block
-		PopulationDensity.ManagedWorld.getBlockAt(x, y + 3, z).setType(PopulationDensity.instance.postTopperType);
-
+        PopulationDensity.ManagedWorld.getBlockAt(x, y + 3, z).setType(PopulationDensity.instance.postTopperMaterial);
+		
 		//build outer platform
 		for(int x1 = x - 2; x1 <= x + 2; x1++)
 		{
 			for(int z1 = z - 2; z1 <= z + 2; z1++)
 			{
-				PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.outerPlatformType);
+				PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.outerPlatformMaterial);
 			}
 		}
-
+		
 		//build inner platform
-		for(int x1 = x - 1; x1 <= x + 1; x1++)
+        for(int x1 = x - 1; x1 <= x + 1; x1++)
+        {
+            for(int z1 = z - 1; z1 <= z + 1; z1++)
+            {
+                PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.innerPlatformMaterial);
+            }
+        }
+        
+        //build lower center blocks
+        for(int y1 = y; y1 <= y + 2; y1++)
+        {
+            PopulationDensity.ManagedWorld.getBlockAt(x, y1, z).setType(PopulationDensity.instance.postMaterial);
+        }
+
+		String regionName = this.getRegionName(region);
+
+		//If the top sign configuration is not null
+		if (PopulationDensity.instance.topSignContent != null)
 		{
-			for(int z1 = z - 1; z1 <= z + 1; z1++)
+			//build a sign on top with region name (or wilderness if no name)
+			if(regionName == null) regionName = "Wilderness";
+			regionName = PopulationDensity.capitalize(regionName);
+			setSign(x, y + 4, z, BlockFace.NORTH, PopulationDensity.instance.topSignContent, "%regionName%", regionName);
+		}
+
+		//If the side sign configuration is not null
+		if (PopulationDensity.instance.sideSignContent != null)
+		{
+			//add a sign for the region to the north
+			regionName = this.getRegionName(new RegionCoordinates(region.x - 1, region.z));
+			if (regionName == null) regionName = "Wilderness";
+			regionName = PopulationDensity.capitalize(regionName);
+			setWallSign(x, y + 2, z + 1, BlockFace.SOUTH, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
+
+			//add a sign for the region to the east
+			regionName = this.getRegionName(new RegionCoordinates(region.x, region.z - 1));
+			if (regionName == null) regionName = "Wilderness";
+			regionName = PopulationDensity.capitalize(regionName);
+			setWallSign(x - 1, y + 2, z, BlockFace.WEST, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
+
+			//add a sign for the region to the south
+			regionName = this.getRegionName(new RegionCoordinates(region.x + 1, region.z));
+			if (regionName == null) regionName = "Wilderness";
+			regionName = PopulationDensity.capitalize(regionName);
+			setWallSign(x, y + 2, z - 1, BlockFace.NORTH,  PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
+
+			//add a sign for the region to the west
+			regionName = this.getRegionName(new RegionCoordinates(region.x, region.z + 1));
+			if (regionName == null) regionName = "Wilderness";
+			regionName = PopulationDensity.capitalize(regionName);
+			setWallSign(x + 1, y + 2, z, BlockFace.EAST, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
+		}
+
+		//if teleportation is enabled, also add a sign facing north and south for teleportation help
+		if(PopulationDensity.instance.allowTeleportation)
+		{
+			if (PopulationDensity.instance.instructionsSignContent != null)
 			{
-				PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.innerPlatformType);
+				setWallSign(x - 1, y + 3, z, BlockFace.WEST, PopulationDensity.instance.instructionsSignContent);
+				setWallSign(x + 1, y + 3, z, BlockFace.EAST, PopulationDensity.instance.instructionsSignContent);
 			}
 		}
 
-		//build lower center blocks
-		for(int y1 = y; y1 <= y + 2; y1++)
-		{
-			PopulationDensity.ManagedWorld.getBlockAt(x, y1, z).setType(PopulationDensity.instance.postType);
-		}
-		
-		//build a sign on top with region name (or wilderness if no name)
-		String regionName = this.getRegionName(region);
-		if(regionName == null) regionName = "Wilderness";
-		regionName = PopulationDensity.capitalize(regionName);
-		Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y + 4, z);
-		block.setType(Material.SIGN);
-		
-		org.bukkit.block.Sign sign = (org.bukkit.block.Sign)block.getState();
-		sign.setLine(1, PopulationDensity.capitalize(regionName));
-		sign.setLine(2, "Region");
-		sign.update();
-		
-		//add a sign for the region to the south
-		regionName = this.getRegionName(new RegionCoordinates(region.x + 1, region.z));
-		if(regionName == null) regionName = "Wilderness";
-		regionName = PopulationDensity.capitalize(regionName);
-		
-		block = PopulationDensity.ManagedWorld.getBlockAt(x, y + 2, z - 1);
-
-		org.bukkit.material.Sign signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-		signData.setFacingDirection(BlockFace.NORTH);
-
-		block.setType(Material.WALL_SIGN);
-		block.setData(signData.getData());
-		
-		sign = (org.bukkit.block.Sign)block.getState();
-		
-		sign.setLine(0, "<--");
-		sign.setLine(1, regionName);
-	    sign.setLine(2, "Region");
-		sign.setLine(3, "<--");
-		
-		sign.update();
-		
-		//add a sign for the region to the east
-		regionName = this.getRegionName(new RegionCoordinates(region.x, region.z - 1));
-		if(regionName == null) regionName = "Wilderness";
-		regionName = PopulationDensity.capitalize(regionName);
-		
-		block = PopulationDensity.ManagedWorld.getBlockAt(x - 1, y + 2, z);
-		
-		signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-		signData.setFacingDirection(BlockFace.WEST);
-
-		block.setType(Material.WALL_SIGN);
-		block.setData(signData.getData());
-		
-		sign = (org.bukkit.block.Sign)block.getState();
-		
-		sign.setLine(0, "<--");
-        sign.setLine(1, regionName);
-        sign.setLine(2, "Region");
-        sign.setLine(3, "<--");
-		
-		sign.update();
-		
-		//if teleportation is enabled, also add a sign facing north for teleportation help
-		if(PopulationDensity.instance.allowTeleportation)
-		{
-			block = PopulationDensity.ManagedWorld.getBlockAt(x - 1, y + 3, z);
-			
-			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-			signData.setFacingDirection(BlockFace.WEST);
-
-			block.setType(Material.WALL_SIGN);
-			block.setData(signData.getData());
-			
-			sign = (org.bukkit.block.Sign)block.getState();
-			
-			sign.setLine(0, "Teleport");
-			sign.setLine(1, "From Here!");
-			sign.setLine(2, "Punch For");
-			sign.setLine(3, "Instructions");
-			
-			sign.update();
-		}
-		
-		//add a sign for the region to the south
-		regionName = this.getRegionName(new RegionCoordinates(region.x, region.z + 1));
-		if(regionName == null) regionName = "Wilderness";
-		regionName = PopulationDensity.capitalize(regionName);
-		
-		block = PopulationDensity.ManagedWorld.getBlockAt(x + 1, y + 2, z);
-		
-		signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-		signData.setFacingDirection(BlockFace.EAST);
-
-		block.setType(Material.WALL_SIGN);
-		block.setData(signData.getData());
-		
-		sign = (org.bukkit.block.Sign)block.getState();
-		
-		sign.setLine(0, "<--");
-        sign.setLine(1, regionName);
-        sign.setLine(2, "Region");
-        sign.setLine(3, "<--");
-		
-		sign.update();
-		
-		//if teleportation is enabled, also add a sign facing south for teleportation help
-		if(PopulationDensity.instance.allowTeleportation)
-		{
-			block = PopulationDensity.ManagedWorld.getBlockAt(x + 1, y + 3, z);
-			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-			signData.setFacingDirection(BlockFace.EAST);
-
-			block.setType(Material.WALL_SIGN);
-			block.setData(signData.getData());
-			
-			sign = (org.bukkit.block.Sign)block.getState();
-			
-			sign.setLine(0, "Teleport");
-            sign.setLine(1, "From Here!");
-            sign.setLine(2, "Punch For");
-            sign.setLine(3, "Instructions");
-			
-			sign.update();
-		}
-		
-		//add a sign for the region to the north
-		regionName = this.getRegionName(new RegionCoordinates(region.x - 1, region.z));
-		if(regionName == null) regionName = "Wilderness";
-		regionName = PopulationDensity.capitalize(regionName);
-		
-		block = PopulationDensity.ManagedWorld.getBlockAt(x, y + 2, z + 1);
-		
-		signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-		signData.setFacingDirection(BlockFace.SOUTH);
-
-		block.setType(Material.WALL_SIGN);
-		block.setData(signData.getData());
-		
-		sign = (org.bukkit.block.Sign)block.getState();
-		
-		sign.setLine(0, "<--");
-        sign.setLine(1, regionName);
-        sign.setLine(2, "Region");
-        sign.setLine(3, "<--");
-		
-		sign.update();
-		
 		//custom signs
-		
 		if(PopulationDensity.instance.mainCustomSignContent != null)
 		{
-			block = PopulationDensity.ManagedWorld.getBlockAt(x, y + 3, z - 1);
-
-			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-			signData.setFacingDirection(BlockFace.NORTH);
-
-			block.setType(Material.WALL_SIGN);
-			block.setData(signData.getData());
-			
-			sign = (org.bukkit.block.Sign)block.getState();
-			
-			for(int i = 0; i < 4; i++)
-			{
-				sign.setLine(i, PopulationDensity.instance.mainCustomSignContent[i]);
-			}
-			
-			sign.update();
+			setWallSign(x, y + 3, z - 1, BlockFace.NORTH, PopulationDensity.instance.mainCustomSignContent);
 		}
 		
 		if(PopulationDensity.instance.northCustomSignContent != null)
 		{
-			block = PopulationDensity.ManagedWorld.getBlockAt(x - 1, y + 1, z);
-
-			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-			signData.setFacingDirection(BlockFace.WEST);
-
-			block.setType(Material.WALL_SIGN);
-			block.setData(signData.getData());
-			
-			sign = (org.bukkit.block.Sign)block.getState();
-			
-			for(int i = 0; i < 4; i++)
-			{
-				sign.setLine(i, PopulationDensity.instance.northCustomSignContent[i]);
-			}
-			
-			sign.update();
+			setWallSign(x - 1, y + 1, z, BlockFace.WEST, PopulationDensity.instance.northCustomSignContent);
 		}
 		
 		if(PopulationDensity.instance.southCustomSignContent != null)
 		{
-			block = PopulationDensity.ManagedWorld.getBlockAt(x + 1, y + 1, z);
-			
-			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-			signData.setFacingDirection(BlockFace.EAST);
-
-			block.setType(Material.WALL_SIGN);
-			block.setData(signData.getData());
-			
-			sign = (org.bukkit.block.Sign)block.getState();
-			
-			for(int i = 0; i < 4; i++)
-			{
-				sign.setLine(i, PopulationDensity.instance.southCustomSignContent[i]);
-			}
-			
-			sign.update();
+			setWallSign(x + 1, y + 1, z, BlockFace.EAST, PopulationDensity.instance.southCustomSignContent);
 		}
 		
 		if(PopulationDensity.instance.eastCustomSignContent != null)
 		{
-			block = PopulationDensity.ManagedWorld.getBlockAt(x, y + 1, z - 1);
-			
-			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-			signData.setFacingDirection(BlockFace.NORTH);
-
-			block.setType(Material.WALL_SIGN);
-			block.setData(signData.getData());
-			
-			sign = (org.bukkit.block.Sign)block.getState();
-			
-			for(int i = 0; i < 4; i++)
-			{
-				sign.setLine(i, PopulationDensity.instance.eastCustomSignContent[i]);
-			}
-			
-			sign.update();
+			setWallSign(x, y + 1, z - 1, BlockFace.NORTH, PopulationDensity.instance.eastCustomSignContent);
 		}
 		
 		if(PopulationDensity.instance.westCustomSignContent != null)
 		{
-			block = PopulationDensity.ManagedWorld.getBlockAt(x, y + 1, z + 1);
-			
-			signData = new org.bukkit.material.Sign(Material.WALL_SIGN);
-			signData.setFacingDirection(BlockFace.SOUTH);
-
-			block.setType(Material.WALL_SIGN);
-			block.setData(signData.getData());
-			
-			sign = (org.bukkit.block.Sign)block.getState();
-			
-			for(int i = 0; i < 4; i++)
-			{
-				sign.setLine(i, PopulationDensity.instance.westCustomSignContent[i]);
-			}
-			
-			sign.update();
+			setWallSign(x, y + 1, z + 1, BlockFace.SOUTH, PopulationDensity.instance.westCustomSignContent);
 		}
+	}
+
+	private void setSign(int x, int y, int z, BlockFace blockFace, String[] lines, String... replacements) {
+		Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y, z);
+		block.setType(Material.SIGN);
+
+		org.bukkit.block.data.type.Sign wall = (org.bukkit.block.data.type.Sign) block.getBlockData();
+		wall.setRotation(blockFace);
+		block.setBlockData(wall);
+
+		Sign s = (Sign)block.getState();
+		for(int i = 0; i < 4; i++)
+		{
+			String line = lines[i];
+			for (int r = 0; r < replacements.length; r++, r++) {
+				String key = replacements[r];
+				String value = replacements[r + 1];
+				line = line.replace(key, value);
+			}
+			s.setLine(i, color(line));
+		}
+		s.update();
+	}
+
+	private void setWallSign(int x, int y, int z, BlockFace blockFace, String[] lines, String... replacements) {
+		Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y, z);
+		block.setType(Material.WALL_SIGN);
+
+		org.bukkit.block.data.type.WallSign wall = (org.bukkit.block.data.type.WallSign) block.getBlockData();
+		wall.setFacing(blockFace);
+		block.setBlockData(wall);
+
+		Sign s = (Sign)block.getState();
+		for(int i = 0; i < 4; i++)
+		{
+			String line = lines[i];
+			for (int r = 0; r < replacements.length; r++, r++) {
+				String key = replacements[r];
+				String value = replacements[r + 1];
+				line = line.replace(key, value);
+			}
+			s.setLine(i, color(line));
+		}
+		s.update();
+	}
+
+	private String color(String string) {
+		return ChatColor.translateAlternateColorCodes('&', string);
 	}
 	
 	public void clearCachedPlayerData(Player player)
@@ -877,7 +757,8 @@ public class DataStore implements TabCompleter
         this.addDefault(defaults, Messages.Lag, "lag", null);
         this.addDefault(defaults, Messages.RegionAlreadyNamed, "This region already has a name.  To REname, use /RenameRegion.", null);
         this.addDefault(defaults, Messages.HopperLimitReached, "To prevent server lag, hoppers are limited to {0} per chunk.", "0: maximum hoppers per chunk");
-        
+        this.addDefault(defaults, Messages.OutsideWorldBorder, "The region you are attempting to teleport to is outside the world border.", null);
+	
         //load the config file
         FileConfiguration config = YamlConfiguration.loadConfiguration(new File(messagesFilePath));
         

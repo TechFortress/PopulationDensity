@@ -19,21 +19,14 @@
 package me.ryanhamshire.PopulationDensity;
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
-import org.bukkit.ChunkSnapshot;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -103,10 +96,10 @@ public class PopulationDensity extends JavaPlugin
 	public boolean preciseWorldSpawn;
 	public int woodMinimum;
     public int resourceMinimum;
-	public Material postTopperType = Material.GLOWSTONE;
-	public Material postType = Material.GLOWSTONE;
-	public Material outerPlatformType = Material.STONE_BRICKS;
-	public Material innerPlatformType = Material.STONE_BRICKS;
+    public Material postTopperMaterial = Material.GLOWSTONE;
+    public Material postMaterial = Material.GLOWSTONE;
+    public Material outerPlatformMaterial = Material.STONE_BRICKS;
+    public Material innerPlatformMaterial = Material.STONE_BRICKS;
     public int nearbyMonsterSpawnLimit;
     public int maxRegionNameLength = 10;
     public boolean abandonedFarmAnimalsDie;
@@ -124,7 +117,10 @@ public class PopulationDensity extends JavaPlugin
         boolean config_launchAndDropNewPlayers;
 	
 	public int minimumRegionPostY;
-	
+
+	public String [] topSignContent;
+	public String [] sideSignContent;
+	public String [] instructionsSignContent;
 	public String [] mainCustomSignContent;
 	public String [] northCustomSignContent;
 	public String [] southCustomSignContent;
@@ -215,7 +211,7 @@ public class PopulationDensity extends JavaPlugin
 		this.config_launchAndDropPlayers = config.getBoolean("PopulationDensity.LaunchAndDropPlayers", true);
 		this.config_launchAndDropNewPlayers = config.getBoolean("PopulationDensity.LaunchAndDropNewPlayers", config_launchAndDropPlayers);
 
-
+		
 		String topper = config.getString("PopulationDensity.PostDesign.TopBlock", "GLOWSTONE");  //default glowstone
 		String post = config.getString("PopulationDensity.PostDesign.PostBlocks", "GLOWSTONE");
 		String outerPlat = config.getString("PopulationDensity.PostDesign.PlatformOuterRing", "STONE_BRICKS");  //default stone brick
@@ -227,10 +223,25 @@ public class PopulationDensity extends JavaPlugin
 		this.markRemovedEntityLocations = config.getBoolean("PopulationDensity.MarkRemovedAnimalLocationsWithShrubs", true);
 		this.removeWildSkeletalHorses = config.getBoolean("PopulationDensity.Remove Wild Skeletal Horses", true);
 
-		this.postTopperType = this.processMaterials(topper);
-		this.postType = this.processMaterials(post);
-		this.outerPlatformType = this.processMaterials(outerPlat);
-		this.innerPlatformType = this.processMaterials(innerPlat);
+		Material resultT = this.processMaterials(topper);
+		if (resultT != null) {
+			this.postTopperMaterial = resultT;
+		}
+
+		Material resultP = this.processMaterials(post);
+		if (resultP != null) {
+			this.postMaterial = resultP;
+		}
+
+		Material resultO = this.processMaterials(outerPlat);
+		if (resultO != null) {
+			this.outerPlatformMaterial = resultO;
+		}
+
+		Material resultI = this.processMaterials(innerPlat);
+		if (resultI != null) {
+			this.innerPlatformMaterial = resultI;
+		}
 		
 		List <String> defaultRegionNames = Arrays.asList(
             "redstone",
@@ -381,6 +392,10 @@ public class PopulationDensity extends JavaPlugin
         outConfig.set("PopulationDensity.Region Name List", regionNames);
 		
 		//this is a combination load/preprocess/save for custom signs on the region posts
+		this.topSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.Signs.Top", new String [] {"", "%regionName%", "Region", ""});
+		this.sideSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.Signs.Side", new String [] {"<--", "%regionName%", "Region", "<--"});
+		this.instructionsSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.Signs.Instructions", new String [] {"Teleport", "From Here!", "Punch For", "Instructions"});
+
 		this.mainCustomSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.CustomSigns.Main", new String [] {"", "Population", "Density", ""});
 		this.northCustomSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.CustomSigns.North", new String [] {"", "", "", ""});
 		this.southCustomSignContent = this.initializeSignContentConfig(config, outConfig, "PopulationDensity.CustomSigns.South", new String [] {"", "", "", ""});
@@ -1114,7 +1129,13 @@ public class PopulationDensity extends JavaPlugin
 		if(player.hasPermission("populationdensity.teleportanywhere")) return new CanTeleportResult(true);
 		
 		//disallow spamming commands to hover in the air
-        if(!player.isOnGround()) return new CanTeleportResult(false);
+        	if(!player.isOnGround()) {
+			if(player.getVehicle() == null) {
+				return new CanTeleportResult(false);
+			}
+			// Dismount them if they're riding
+			player.leaveVehicle();
+		}
 		
 		//if teleportation from anywhere is enabled, always allow it
 		if(this.teleportFromAnywhere) return new CanTeleportResult(true);
@@ -1209,6 +1230,17 @@ public class PopulationDensity extends JavaPlugin
 		teleportDestination.setY(teleportDestination.getBlockY() + 1D);
 		teleportDestination.setZ(teleportDestination.getBlockZ() + 0.5D);
 
+		// Check the world border
+		WorldBorder border = ManagedWorld.getWorldBorder();
+		double size = border.getSize() / 2;
+		Location center = border.getCenter();
+		double x = teleportDestination.getBlockX() - center.getX(),
+			z = teleportDestination.getBlockZ() - center.getZ();
+		if((x > size || (-x) > size) || (z > size || (-z) > size)) {
+			PopulationDensity.sendMessage(player, TextMode.Err, Messages.OutsideWorldBorder);
+			return;
+		}
+
 		
 		//drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
 		if (doDrop && !player.getGameMode().equals(GameMode.SPECTATOR))
@@ -1268,7 +1300,7 @@ public class PopulationDensity extends JavaPlugin
     					for(int y = 0; y < ManagedWorld.getMaxHeight(); y++)
     					{
     						//if we find something, save the snapshot to the snapshot array
-							if (snapshot.getBlockType(0, y, 0) != Material.AIR)
+    						if(snapshot.getBlockType(0, y, 0) != Material.AIR)
     						{
     							foundNonAir = true;
     							snapshots[x][z] = snapshot;
@@ -1415,11 +1447,12 @@ public class PopulationDensity extends JavaPlugin
 
 	private Material processMaterials(String string)
 	{
-		if(string != null && Material.getMaterial(string) != null) {
-			return Material.getMaterial(string);
+        Material material = Material.getMaterial(string);
+        if (material == null) {
+			AddLogEntry("Error: Couldn't resolve material \""+string+"\". Please update your config.yml.");
 		}
-		return null;
-	}
+		return material;
+    }
 	
 	//sends a color-coded message to a player
     static void sendMessage(Player player, ChatColor color, Messages messageID, String... args)

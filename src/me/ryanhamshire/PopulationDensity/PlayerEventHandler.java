@@ -280,13 +280,6 @@ public class PlayerEventHandler implements Listener {
 		this.onPlayerDisconnect(event.getPlayer());
 	}
 
-	// when a player gets kicked...
-	@EventHandler(ignoreCancelled = true)
-	public void onPlayerKicked(PlayerKickEvent event)
-	{
-		this.onPlayerDisconnect(event.getPlayer());
-	}
-
 	// when a player disconnects...
 	private void onPlayerDisconnect(Player player)
 	{
