@@ -124,6 +124,10 @@ public class MonitorPerformanceTask implements Runnable
             EntityType.RABBIT,
             EntityType.MUSHROOM_COW
         ));
+
+        if (PopulationDensity.instance.thinIronGolemsToo) {
+            thinnableAnimals.add(EntityType.IRON_GOLEM);
+        }
         
         int totalEntities = 0;
         int totalRemoved = 0;

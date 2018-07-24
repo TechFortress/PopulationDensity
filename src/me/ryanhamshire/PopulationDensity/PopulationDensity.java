@@ -93,6 +93,7 @@ public class PopulationDensity extends JavaPlugin
 	public boolean respawnAnimals;
 	public boolean regrowTrees;
 	public boolean thinAnimalAndMonsterCrowds;
+	public boolean thinIronGolemsToo;
 	public boolean preciseWorldSpawn;
 	public int woodMinimum;
     public int resourceMinimum;
@@ -199,6 +200,7 @@ public class PopulationDensity extends JavaPlugin
 		this.regrowTrees = config.getBoolean("PopulationDensity.TreesRegrow", true);
 		this.config_maximumHoppersPerChunk = config.getInt("PopulationDensity.Maximum Hoppers Per Chunk", 10);
 		this.thinAnimalAndMonsterCrowds = config.getBoolean("PopulationDensity.ThinOvercrowdedAnimalsAndMonsters", true);
+		this.thinIronGolemsToo = config.getBoolean("PopulationDensity.ThinOverCrowdedIronGolems", this.thinIronGolemsToo);
 		this.minimumRegionPostY = config.getInt("PopulationDensity.MinimumRegionPostY", 62);
 		this.preciseWorldSpawn = config.getBoolean("PopulationDensity.PreciseWorldSpawn", false);
 		this.woodMinimum = config.getInt("PopulationDensity.MinimumWoodAvailableToPlaceNewPlayers", 200);
@@ -382,6 +384,7 @@ public class PopulationDensity extends JavaPlugin
 		outConfig.set("PopulationDensity.TreesRegrow", this.regrowTrees);
         outConfig.set("PopulationDensity.Max Monsters Nearby For More To Spawn", this.nearbyMonsterSpawnLimit);
 		outConfig.set("PopulationDensity.ThinOvercrowdedAnimalsAndMonsters", this.thinAnimalAndMonsterCrowds);
+		outConfig.set("PopulationDensity.ThinOvercrowdedIronGolems", this.thinIronGolemsToo);
 		outConfig.set("PopulationDensity.Abandoned Farm Animals Die", this.abandonedFarmAnimalsDie);
 		outConfig.set("PopulationDensity.Unused Minecarts Vanish", this.unusedMinecartsVanish);
 		outConfig.set("PopulationDensity.MarkRemovedAnimalLocationsWithShrubs", this.markRemovedEntityLocations);
