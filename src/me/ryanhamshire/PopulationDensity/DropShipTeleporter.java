@@ -61,12 +61,12 @@ public class DropShipTeleporter implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event)
     {
         Entity entity = event.getEntity();
         //when an entity has fall damage immunity, it lasts for only ONE fall damage check
-        if(event.getCause() == EntityDamageEvent.DamageCause.FALL)
+        if(event.getCause().equals(EntityDamageEvent.DamageCause.FALL))
         {
             if(isFallDamageImmune(entity))
             {
@@ -91,21 +91,17 @@ public class DropShipTeleporter implements Listener {
         {
             Player player = (Player) entity;
             if(player.getGameMode() == GameMode.CREATIVE || player.getGameMode() == GameMode.SPECTATOR) return;
-            player.setGliding(false);
         }
-        entity.setGliding(false);
-        entity.setMetadata("PD_NOFALLDMG", new FixedMetadataValue(instance, instance));
         fallImmunityList.add(entity.getUniqueId());
     }
 
     boolean isFallDamageImmune(Entity entity)
     {
-        return entity.hasMetadata("PD_NOFALLDMG") || fallImmunityList.contains(entity.getUniqueId());
+        return fallImmunityList.contains(entity.getUniqueId());
     }
 
     void removeFallDamageImmunity(Entity entity)
     {
-        entity.removeMetadata("PD_NOFALLDMG", instance);
         fallImmunityList.remove(entity.getUniqueId());
     }
 }

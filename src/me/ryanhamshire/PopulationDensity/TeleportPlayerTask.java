@@ -121,14 +121,15 @@ class TeleportPlayerTask extends BukkitRunnable
 		
 		//sound effect
         player.playSound(destination, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
-        
-		for(Entity entity : entitiesToTeleport)
-	    {
-	        if(!(entity instanceof LivingEntity)) continue;
-	        LivingEntity livingEntity = (LivingEntity)entity;
-	        if (this.makeFallDamageImmune)
-		        dropShipTeleporter.makeEntityFallDamageImmune(livingEntity);
-		    entity.teleport(destination, TeleportCause.PLUGIN);
-	    }
+
+		if (PopulationDensity.instance.config_teleportAnimals) {
+            for (Entity entity : entitiesToTeleport) {
+                if (!(entity instanceof LivingEntity)) continue;
+                LivingEntity livingEntity = (LivingEntity) entity;
+                if (this.makeFallDamageImmune)
+                    dropShipTeleporter.makeEntityFallDamageImmune(livingEntity);
+                entity.teleport(destination, TeleportCause.PLUGIN);
+            }
+        }
 	}
 }

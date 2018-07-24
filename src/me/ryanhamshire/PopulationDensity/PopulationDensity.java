@@ -114,7 +114,8 @@ public class PopulationDensity extends JavaPlugin
 	public boolean config_keepSpawnRegionPostLoaded;
 	public boolean config_keepAllRegionPostsLoaded;
 	boolean config_launchAndDropPlayers;
-        boolean config_launchAndDropNewPlayers;
+	boolean config_launchAndDropNewPlayers;
+	boolean config_teleportAnimals = true;
 	
 	public int minimumRegionPostY;
 
@@ -210,7 +211,7 @@ public class PopulationDensity extends JavaPlugin
 		this.config_keepAllRegionPostsLoaded = config.getBoolean("PopulationDensity.KeepAllRegionPostsLoaded", false);
 		this.config_launchAndDropPlayers = config.getBoolean("PopulationDensity.LaunchAndDropPlayers", true);
 		this.config_launchAndDropNewPlayers = config.getBoolean("PopulationDensity.LaunchAndDropNewPlayers", config_launchAndDropPlayers);
-
+		this.config_teleportAnimals = config.getBoolean("PopulationDensity.TeleportAnimals", config_teleportAnimals);
 		
 		String topper = config.getString("PopulationDensity.PostDesign.TopBlock", "GLOWSTONE");  //default glowstone
 		String post = config.getString("PopulationDensity.PostDesign.PostBlocks", "GLOWSTONE");
@@ -379,6 +380,7 @@ public class PopulationDensity extends JavaPlugin
 		outConfig.set("PopulationDensity.KeepAllRegionPostsLoaded", this.config_keepAllRegionPostsLoaded);
 		outConfig.set("PopulationDensity.LaunchAndDropPlayers", this.config_launchAndDropPlayers);
 		outConfig.set("PopulationDensity.LaunchAndDropNewPlayers", this.config_launchAndDropNewPlayers);
+		outConfig.set("PopulationDensity.TeleportAnimals", this.config_teleportAnimals);
 		outConfig.set("PopulationDensity.MinimumRegionPostY", this.minimumRegionPostY);
 		outConfig.set("PopulationDensity.PreciseWorldSpawn", this.preciseWorldSpawn);
 		outConfig.set("PopulationDensity.MinimumWoodAvailableToPlaceNewPlayers", this.woodMinimum);
