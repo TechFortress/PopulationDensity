@@ -52,14 +52,6 @@ public class DropShipTeleporter implements Listener {
             event.setCancelled(true);
         }
     }
-   
-    @EventHandler(ignoreCancelled = true)
-    public void onPlayerMove(PlayerMoveEvent event) {
-        Player player = event.getPlayer();
-        if(isFallDamageImmune(player) && player.isOnGround()) {
-            removeFallDamageImmunity(player);
-        }
-    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onEntityDamage(EntityDamageEvent event)

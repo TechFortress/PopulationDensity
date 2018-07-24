@@ -182,11 +182,46 @@ public class BlockEventHandler implements Listener
 		if(!player.getWorld().equals(PopulationDensity.ManagedWorld)) return;
 		
 		Location blockLocation = block.getLocation();
+
+		//if over hopper limit for chunk, send error message
+		Material type = null;
+		if(!player.hasPermission("populationdensity.unlimitedhoppers"))
+		{
+			type = block.getType();
+			if(type == Material.HOPPER)
+			{
+				int hopperCount = 0;
+				BlockState [] tiles = block.getChunk().getTileEntities();
+				for(BlockState tile : tiles)
+				{
+					if(tile.getType() == Material.HOPPER && ++hopperCount >= PopulationDensity.instance.config_maximumHoppersPerChunk)
+					{
+						placeEvent.setCancelled(true);
+						PopulationDensity.sendMessage(player, TextMode.Err, Messages.HopperLimitReached, String.valueOf(PopulationDensity.instance.config_maximumHoppersPerChunk));
+						return;
+					}
+				}
+			}
+		}
+
+		RegionCoordinates blockRegion = RegionCoordinates.fromLocation(blockLocation);
+
+		//if bed or chest and player has not been reminded about /movein this play session
+		if(type == null) type = block.getType();
+		if(beds.contains(type) || type == Material.CHEST)
+		{
+			PlayerData playerData = PopulationDensity.instance.dataStore.getPlayerData(player);
+			if(playerData.advertisedMoveInThisSession) return;
+
+			if(!playerData.homeRegion.equals(blockRegion))
+			{
+				PopulationDensity.sendMessage(player, TextMode.Warn, Messages.BuildingAwayFromHome);
+				playerData.advertisedMoveInThisSession = true;
+			}
+		}
 		
 		//region posts are at sea level at the lowest, so no need to check build permissions under that
 		if(blockLocation.getBlockY() < PopulationDensity.instance.minimumRegionPostY) return;
-		
-		RegionCoordinates blockRegion = RegionCoordinates.fromLocation(blockLocation); 
 		
 		//if too close to (or above) region post, send an error message
 		if(!player.hasPermission("populationdensity.buildbreakanywhere") && this.nearRegionPost(blockLocation, blockRegion, PopulationDensity.instance.postProtectionRadius))
@@ -197,41 +232,6 @@ public class BlockEventHandler implements Listener
 			    PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoBuildSpawn);
 			placeEvent.setCancelled(true);
 			return;
-		}
-		
-		//if over hopper limit for chunk, send error message
-		Material type = null;
-		if(!player.hasPermission("populationdensity.unlimitedhoppers"))
-		{
-		    type = block.getType();
-		    if(type == Material.HOPPER)
-		    {
-		        int hopperCount = 0;
-		        BlockState [] tiles = block.getChunk().getTileEntities();
-		        for(BlockState tile : tiles)
-		        {
-		            if(tile.getType() == Material.HOPPER && ++hopperCount >= PopulationDensity.instance.config_maximumHoppersPerChunk)
-		            {
-		                placeEvent.setCancelled(true);
-		                PopulationDensity.sendMessage(player, TextMode.Err, Messages.HopperLimitReached, String.valueOf(PopulationDensity.instance.config_maximumHoppersPerChunk));
-		                return;
-		            }
-		        }
-		    }
-		}
-		
-		//if bed or chest and player has not been reminded about /movein this play session
-		if(type == null) type = block.getType();
-		if(beds.contains(type) || type == Material.CHEST)
-		{
-			PlayerData playerData = PopulationDensity.instance.dataStore.getPlayerData(player);
-			if(playerData.advertisedMoveInThisSession) return;
-			
-			if(!playerData.homeRegion.equals(blockRegion))
-			{
-				PopulationDensity.sendMessage(player, TextMode.Warn, Messages.BuildingAwayFromHome);
-				playerData.advertisedMoveInThisSession = true;
-			}
 		}
 	}
 	

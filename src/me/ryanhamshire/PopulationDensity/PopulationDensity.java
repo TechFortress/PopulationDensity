@@ -96,8 +96,10 @@ public class PopulationDensity extends JavaPlugin
 	public boolean preciseWorldSpawn;
 	public int woodMinimum;
     public int resourceMinimum;
-    public Material postTopperMaterial = Material.GLOWSTONE;
-    public Material postMaterial = Material.GLOWSTONE;
+    public Material postMaterialTop = Material.GLOWSTONE;
+	public Material postMaterialMidTop = Material.GLOWSTONE;
+	public Material postMaterialMidBottom = Material.GLOWSTONE;
+    public Material postMaterialBottom = Material.GLOWSTONE;
     public Material outerPlatformMaterial = Material.STONE_BRICKS;
     public Material innerPlatformMaterial = Material.STONE_BRICKS;
     public int nearbyMonsterSpawnLimit;
@@ -213,9 +215,11 @@ public class PopulationDensity extends JavaPlugin
 		this.config_launchAndDropNewPlayers = config.getBoolean("PopulationDensity.LaunchAndDropNewPlayers", config_launchAndDropPlayers);
 		this.config_teleportAnimals = config.getBoolean("PopulationDensity.TeleportAnimals", config_teleportAnimals);
 		
-		String topper = config.getString("PopulationDensity.PostDesign.TopBlock", "GLOWSTONE");  //default glowstone
-		String post = config.getString("PopulationDensity.PostDesign.PostBlocks", "GLOWSTONE");
-		String outerPlat = config.getString("PopulationDensity.PostDesign.PlatformOuterRing", "STONE_BRICKS");  //default stone brick
+		String top = config.getString("PopulationDensity.PostDesign.TopBlock", "GLOWSTONE");
+		String midTop= config.getString("PopulationDensity.PostDesign.MidTopBlock", "GLOWSTONE");
+		String midBottom= config.getString("PopulationDensity.PostDesign.MidBottomBlock", "GLOWSTONE");
+		String bottom= config.getString("PopulationDensity.PostDesign.BottomBlock", "GLOWSTONE");
+		String outerPlat = config.getString("PopulationDensity.PostDesign.PlatformOuterRing", "STONE_BRICKS");
 		String innerPlat = config.getString("PopulationDensity.PostDesign.PlatformInnerRing", "STONE_BRICKS");
 		this.nearbyMonsterSpawnLimit = config.getInt("PopulationDensity.Max Monsters In Chunk To Spawn More", 2);
 		this.nearbyMonsterSpawnLimit = config.getInt("PopulationDensity.Max Monsters Nearby For More To Spawn", nearbyMonsterSpawnLimit);
@@ -224,14 +228,24 @@ public class PopulationDensity extends JavaPlugin
 		this.markRemovedEntityLocations = config.getBoolean("PopulationDensity.MarkRemovedAnimalLocationsWithShrubs", true);
 		this.removeWildSkeletalHorses = config.getBoolean("PopulationDensity.Remove Wild Skeletal Horses", true);
 
-		Material resultT = this.processMaterials(topper);
+		Material resultT = this.processMaterials(top);
 		if (resultT != null) {
-			this.postTopperMaterial = resultT;
+			this.postMaterialTop = resultT;
 		}
 
-		Material resultP = this.processMaterials(post);
-		if (resultP != null) {
-			this.postMaterial = resultP;
+		Material resultMT = this.processMaterials(midTop);
+		if (resultMT != null) {
+			this.postMaterialMidTop = resultMT;
+		}
+
+		Material resultMB = this.processMaterials(midBottom);
+		if (resultMB != null) {
+			this.postMaterialMidBottom = resultMB;
+		}
+
+		Material resultB = this.processMaterials(bottom);
+		if (resultB != null) {
+			this.postMaterialBottom = resultB;
 		}
 
 		Material resultO = this.processMaterials(outerPlat);
@@ -387,8 +401,10 @@ public class PopulationDensity extends JavaPlugin
 		outConfig.set("PopulationDensity.MinimumResourceScoreToPlaceNewPlayers", this.resourceMinimum);
 		outConfig.set("PopulationDensity.PostProtectionDistance", this.postProtectionRadius);
 		outConfig.set("PopulationDensity.Maximum Region Name Length", this.maxRegionNameLength);
-		outConfig.set("PopulationDensity.PostDesign.TopBlock", topper);
-        outConfig.set("PopulationDensity.PostDesign.PostBlocks", post);
+		outConfig.set("PopulationDensity.PostDesign.TopBlock", top);
+		outConfig.set("PopulationDensity.PostDesign.MidTopBlock", midTop);
+		outConfig.set("PopulationDensity.PostDesign.MidBottomBlock", midBottom);
+		outConfig.set("PopulationDensity.PostDesign.BottomBlock", bottom);
         outConfig.set("PopulationDensity.PostDesign.PlatformOuterRing", outerPlat);
         outConfig.set("PopulationDensity.PostDesign.PlatformInnerRing", innerPlat);
         outConfig.set("PopulationDensity.Region Name List", regionNames);
