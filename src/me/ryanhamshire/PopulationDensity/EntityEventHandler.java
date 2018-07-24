@@ -18,11 +18,7 @@
 
 package me.ryanhamshire.PopulationDensity;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -80,7 +76,7 @@ public class EntityEventHandler implements Listener
                 Material.NETHER_BRICK)));
     	    
     	    allowedSpawnBlocks.put(Environment.THE_END, new HashSet<Material>(Arrays.asList(
-                Material.ENDER_STONE,
+                Material.END_STONE,
                 Material.OBSIDIAN)));
 	    }
 	    instance = populationDensity;
@@ -106,10 +102,27 @@ public class EntityEventHandler implements Listener
 		
 		//NOTE!  Why not distance?  Because distance squared is cheaper and will be good enough for this.
 	}
+
+	private ArrayList<Material> saplings = new ArrayList<Material>(Arrays.asList(
+			Material.OAK_SAPLING,
+			Material.SPRUCE_SAPLING,
+			Material.BIRCH_SAPLING,
+			Material.JUNGLE_SAPLING,
+			Material.ACACIA_SAPLING,
+			Material.DARK_OAK_SAPLING
+	));
+
+	private ArrayList<Material> logs = new ArrayList<Material>(Arrays.asList(
+			Material.OAK_LOG,
+			Material.SPRUCE_LOG,
+			Material.BIRCH_LOG,
+			Material.JUNGLE_LOG,
+			Material.ACACIA_LOG,
+			Material.DARK_OAK_LOG
+	));
 	
 	//when an item despawns
 	//FEATURE: in the newest region only, regrow trees from fallen saplings
-	@SuppressWarnings("deprecation")
     @EventHandler(ignoreCancelled = true)
 	public void onItemDespawn (ItemDespawnEvent event)
 	{
@@ -126,14 +139,14 @@ public class EntityEventHandler implements Listener
 		ItemStack item = ((Item)entity).getItemStack();
 		
 		//only care about saplings
-		if(item.getType() != Material.SAPLING) return;
+		if(saplings.contains(item.getType())) return;
 		
 		//only care about the newest region
 		if(!PopulationDensity.instance.dataStore.getOpenRegion().equals(RegionCoordinates.fromLocation(entity.getLocation()))) return;
 		
 		//only replace these blocks with saplings
 		Block block = entity.getLocation().getBlock();
-		if(block.getType() != Material.AIR && block.getType() != Material.LONG_GRASS && block.getType() != Material.SNOW) return;
+		if(block.getType() != Material.AIR && block.getType() != Material.TALL_GRASS && block.getType() != Material.SNOW) return;
 		
 		//don't plant saplings next to other saplings or logs
 		Block [] neighbors = new Block [] { 				
@@ -148,14 +161,14 @@ public class EntityEventHandler implements Listener
 		
 		for(int i = 0; i < neighbors.length; i++)
 		{
-			if(neighbors[i].getType() == Material.SAPLING || neighbors[i].getType() == Material.LOG) return;
+			if(saplings.contains(neighbors[i].getType()) || logs.contains(neighbors[i].getType())) return;
 		}
 		
 		//only plant trees in grass or dirt
 		Block underBlock = block.getRelative(BlockFace.DOWN);
 		if(underBlock.getType() == Material.GRASS || underBlock.getType() == Material.DIRT)
 		{
-			block.setTypeIdAndData(item.getTypeId(), item.getData().getData(), false);
+			block.setType(item.getType());
 		}
 	}	
 
@@ -303,8 +316,7 @@ public class EntityEventHandler implements Listener
     		}
 		}
 	}
-	
-	@SuppressWarnings("deprecation")
+
     private void regrow(Block center, int radius)
 	{
         Block toHandle;
@@ -319,8 +331,7 @@ public class EntityEventHandler implements Listener
                     Block aboveBlock = toHandle.getRelative(BlockFace.UP);
                     if(aboveBlock.getType() == Material.AIR)
                     {
-                    	aboveBlock.setType(Material.LONG_GRASS);
-                        aboveBlock.setData((byte) 1);  //data == 1 means live grass instead of dead shrub
+                    	aboveBlock.setType(Material.TALL_GRASS);
                     }
                     continue;
                 }
