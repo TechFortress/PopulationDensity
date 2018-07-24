@@ -68,7 +68,7 @@ public class EntityEventHandler implements Listener
 	        allowedSpawnBlocks = new HashMap<Environment, HashSet<Material>>();
 	    
 	        allowedSpawnBlocks.put(Environment.NORMAL, new HashSet<Material>(Arrays.asList(
-    	        Material.GRASS,
+    	        Material.GRASS_BLOCK,
     	        Material.SAND,
     	        Material.GRAVEL,
     	        Material.STONE,
@@ -80,7 +80,7 @@ public class EntityEventHandler implements Listener
                 Material.NETHER_BRICK)));
     	    
     	    allowedSpawnBlocks.put(Environment.THE_END, new HashSet<Material>(Arrays.asList(
-                Material.ENDER_STONE,
+                Material.END_STONE,
                 Material.OBSIDIAN)));
 	    }
 	    instance = populationDensity;
@@ -126,14 +126,20 @@ public class EntityEventHandler implements Listener
 		ItemStack item = ((Item)entity).getItemStack();
 		
 		//only care about saplings
-		if(item.getType() != Material.SAPLING) return;
+		if(     item.getType() != Material.OAK_SAPLING ||
+                        item.getType() != Material.SPRUCE_SAPLING ||
+                        item.getType() != Material.BIRCH_SAPLING ||
+                        item.getType() != Material.JUNGLE_SAPLING ||
+                        item.getType() != Material.ACACIA_SAPLING ||
+                        item.getType() != Material.DARK_OAK_SAPLING
+                        ) return;
 		
 		//only care about the newest region
 		if(!PopulationDensity.instance.dataStore.getOpenRegion().equals(RegionCoordinates.fromLocation(entity.getLocation()))) return;
 		
 		//only replace these blocks with saplings
 		Block block = entity.getLocation().getBlock();
-		if(block.getType() != Material.AIR && block.getType() != Material.LONG_GRASS && block.getType() != Material.SNOW) return;
+		if(block.getType() != Material.AIR && block.getType() != Material.GRASS && block.getType() != Material.SNOW) return;
 		
 		//don't plant saplings next to other saplings or logs
 		Block [] neighbors = new Block [] { 				
@@ -148,14 +154,26 @@ public class EntityEventHandler implements Listener
 		
 		for(int i = 0; i < neighbors.length; i++)
 		{
-			if(neighbors[i].getType() == Material.SAPLING || neighbors[i].getType() == Material.LOG) return;
+                        Material type = neighbors[i].getType();
+			if(     type == Material.OAK_SAPLING ||
+                                type == Material.SPRUCE_SAPLING ||
+                                type == Material.BIRCH_SAPLING ||
+                                type == Material.JUNGLE_SAPLING ||
+                                type == Material.ACACIA_SAPLING ||
+                                type == Material.DARK_OAK_SAPLING ||
+                                type == Material.OAK_LOG ||
+                                type == Material.SPRUCE_LOG ||
+                                type == Material.BIRCH_LOG ||
+                                type == Material.JUNGLE_LOG ||
+                                type == Material.ACACIA_LOG ||
+                                type == Material.DARK_OAK_LOG) return;
 		}
 		
 		//only plant trees in grass or dirt
 		Block underBlock = block.getRelative(BlockFace.DOWN);
-		if(underBlock.getType() == Material.GRASS || underBlock.getType() == Material.DIRT)
+		if(underBlock.getType() == Material.GRASS_BLOCK || underBlock.getType() == Material.DIRT)
 		{
-			block.setTypeIdAndData(item.getTypeId(), item.getData().getData(), false);
+			block.setType(item.getType(), false);
 		}
 	}	
 
@@ -255,7 +273,7 @@ public class EntityEventHandler implements Listener
     			
     			//if it's on grass, there's a 1/100 chance it will also spawn a group of animals
     			Block underBlock = event.getLocation().getBlock().getRelative(BlockFace.DOWN);
-    			if(underBlock.getType() == Material.GRASS && --this.respawnAnimalCounter == 0)
+    			if(underBlock.getType() == Material.GRASS_BLOCK && --this.respawnAnimalCounter == 0)
     			{
     				this.respawnAnimalCounter = 5;
     				
@@ -314,13 +332,12 @@ public class EntityEventHandler implements Listener
             {
                 toHandle = center.getWorld().getBlockAt(center.getX() + x, center.getY() + 2, center.getZ() + z);
                 while(toHandle.getType() == Material.AIR && toHandle.getY() > center.getY() - 4) toHandle = toHandle.getRelative(BlockFace.DOWN);
-                if (toHandle.getType() == Material.GRASS) // Block is grass
+                if (toHandle.getType() == Material.GRASS_BLOCK) // Block is grass
                 {
                     Block aboveBlock = toHandle.getRelative(BlockFace.UP);
                     if(aboveBlock.getType() == Material.AIR)
                     {
-                    	aboveBlock.setType(Material.LONG_GRASS);
-                        aboveBlock.setData((byte) 1);  //data == 1 means live grass instead of dead shrub
+                    	aboveBlock.setType(Material.GRASS, false);
                     }
                     continue;
                 }
