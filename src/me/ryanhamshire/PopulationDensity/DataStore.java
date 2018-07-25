@@ -489,14 +489,15 @@ public class DataStore implements TabCompleter
 						blockType == Material.SNOW 		     ||
 						blockType == Material.VINE
 				));
-				
+
 		if(blockType == Material.SIGN)
 		{
 		    y -= 4;
 		}
-		else if(blockType == Material.GLOWSTONE || (blockType == PopulationDensity.instance.postMaterialTop))
+		// Changed check because of the refactor to the postdesign.
+		else if(blockType == PopulationDensity.instance.postMaterialMidTop)
 		{
-		    y -= 3;
+			y -= 2;
 		}
 		else if(blockType == Material.BEDROCK)
 		{

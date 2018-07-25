@@ -1315,7 +1315,7 @@ public class PopulationDensity extends JavaPlugin
 					{
     					//take a snapshot
     					ChunkSnapshot snapshot = chunk.getChunkSnapshot();
-    					
+
     					//verify the snapshot by finding something that's not air
     					boolean foundNonAir = false;
     					for(int y = 0; y < ManagedWorld.getMaxHeight(); y++)
@@ -1328,12 +1328,12 @@ public class PopulationDensity extends JavaPlugin
     							break;
     						}
     					}
-    					
+
     					//otherwise, plan to repeat this process again after sleeping a bit
     					if(!foundNonAir)
     					{
     						snapshotIncomplete = true;
-    					}	
+    					}
 					}
 					else
 					{

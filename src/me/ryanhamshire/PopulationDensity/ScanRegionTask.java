@@ -1,10 +1,11 @@
 package me.ryanhamshire.PopulationDensity;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
+import org.bukkit.block.Biome;
 
 public class ScanRegionTask extends Thread 
 {
@@ -45,6 +46,7 @@ public class ScanRegionTask extends Thread
         //initialize report content
         int woodCount = 0;
         int coalCount = 0;
+        int lapisCount = 0;
         int ironCount = 0;
         int goldCount = 0;
         int redstoneCount = 0;
@@ -107,6 +109,7 @@ public class ScanRegionTask extends Thread
                 // Check if it's a pass-through-able block
                 case AIR:
                 case CAVE_AIR: // yes this is a thing now in 1.13 ... don't ask me y...
+                case BUBBLE_COLUMN:
                 case OAK_DOOR:
                 case SPRUCE_DOOR:
                 case BIRCH_DOOR:
@@ -181,6 +184,10 @@ public class ScanRegionTask extends Thread
                     coalCount++;
                     break;
                 }
+                case LAPIS_ORE: {
+                    lapisCount++;
+                    break;
+                }
                 case IRON_ORE: {
                     ironCount++;
                     break;
@@ -214,12 +221,9 @@ public class ScanRegionTask extends Thread
                 case GRASS:
                 case FERN:
                 case ALLIUM:
-                case SEAGRASS:
-                case SEA_PICKLE:
                 case RED_MUSHROOM_BLOCK:
                 case BROWN_MUSHROOM_BLOCK:
                 case ICE:
-                case LAPIS_ORE:
                 case OBSIDIAN:
                 case RED_MUSHROOM:
                 case POPPY:
@@ -245,13 +249,54 @@ public class ScanRegionTask extends Thread
                 case DANDELION:
                 case MOSSY_COBBLESTONE:
                 case CLAY:
-                case TERRACOTTA:
                 case SUGAR_CANE:
                 case PACKED_ICE:
                 case ROSE_BUSH:
                 case LILAC:
                 case LARGE_FERN:
-                case PEONY: {
+                case GRASS_BLOCK:
+                case WHITE_TERRACOTTA:
+                case ORANGE_TERRACOTTA:
+                case MAGENTA_TERRACOTTA:
+                case LIGHT_BLUE_TERRACOTTA:
+                case YELLOW_TERRACOTTA:
+                case LIME_TERRACOTTA:
+                case PINK_TERRACOTTA:
+                case GRAY_TERRACOTTA:
+                case LIGHT_GRAY_TERRACOTTA:
+                case CYAN_TERRACOTTA:
+                case PURPLE_TERRACOTTA:
+                case BLUE_TERRACOTTA:
+                case BROWN_TERRACOTTA:
+                case GREEN_TERRACOTTA:
+                case RED_TERRACOTTA:
+                case BLACK_TERRACOTTA:
+                case TERRACOTTA:
+                case GRANITE:
+                case DIORITE:
+                case ANDESITE:
+                case COARSE_DIRT:
+                case PODZOL:
+                case BEDROCK:
+                case PEONY:
+                case SEAGRASS:
+                case TALL_SEAGRASS:
+                case SEA_PICKLE:
+                case TUBE_CORAL:
+                case BRAIN_CORAL:
+                case BUBBLE_CORAL:
+                case FIRE_CORAL:
+                case HORN_CORAL:
+                case TUBE_CORAL_BLOCK:
+                case BRAIN_CORAL_BLOCK:
+                case BUBBLE_CORAL_BLOCK:
+                case FIRE_CORAL_BLOCK:
+                case HORN_CORAL_BLOCK:
+                case TUBE_CORAL_FAN:
+                case BRAIN_CORAL_FAN:
+                case BUBBLE_CORAL_FAN:
+                case FIRE_CORAL_FAN:
+                case HORN_CORAL_FAN: {
                     break;
                 }
 
@@ -279,6 +324,7 @@ public class ScanRegionTask extends Thread
         logEntries.add("Coal: " + coalCount);
         logEntries.add("Iron: " + ironCount);
         logEntries.add("Gold: " + goldCount);
+        logEntries.add("Lapis: " + lapisCount);
         logEntries.add("Redstone: " + redstoneCount);
         logEntries.add("Emerald: " + emeraldCount);
         logEntries.add("Diamond: " + diamondCount);

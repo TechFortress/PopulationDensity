@@ -16,7 +16,6 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
-
     </repositories>
     <build>
     <!--Maintain existing structure (as much as possible)-->
