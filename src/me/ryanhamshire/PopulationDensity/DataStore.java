@@ -25,7 +25,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.*;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Material;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -452,7 +455,7 @@ public class DataStore implements TabCompleter
 		if(!PopulationDensity.instance.buildRegionPosts) return;
 		
 		//find the center
-		Location regionCenter = PopulationDensity.getRegionCenter(region, false);		
+		Location regionCenter = PopulationDensity.getRegionCenter(region, false);
 		int x = regionCenter.getBlockX();
 		int z = regionCenter.getBlockZ();
 		int y;
