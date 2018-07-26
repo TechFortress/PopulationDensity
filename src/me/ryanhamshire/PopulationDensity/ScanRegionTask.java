@@ -201,10 +201,6 @@ public class ScanRegionTask extends Thread
                     coalCount++;
                     break;
                 }
-                case LAPIS_ORE: {
-                    lapisCount++;
-                    break;
-                }
                 case IRON_ORE: {
                     ironCount++;
                     break;
@@ -215,6 +211,10 @@ public class ScanRegionTask extends Thread
                 }
                 case REDSTONE_ORE: {
                     redstoneCount++;
+                    break;
+                }
+                case LAPIS_ORE: {
+                    lapisCount++;
                     break;
                 }
                 case EMERALD_ORE: {
@@ -326,7 +326,7 @@ public class ScanRegionTask extends Thread
         }
 
         //compute a resource score
-        int resourceScore = coalCount * 2 + ironCount * 3 + goldCount * 3 + redstoneCount * 3 + diamondCount * 4 + emeraldCount * 5;
+        int resourceScore = coalCount * 2 + ironCount * 3 + goldCount * 3 + redstoneCount * 3 + emeraldCount * 3 + diamondCount * 4;
 
         //due to a race condition, bukkit might say a chunk is loaded when it really isn't.
         //in that case, bukkit will incorrectly report that all of the blocks in the chunk are air
