@@ -140,7 +140,7 @@ public class EntityEventHandler implements Listener
 
         //only replace these blocks with saplings
         Block block = entity.getLocation().getBlock();
-        if (block.getType() != Material.AIR && block.getType() != Material.TALL_GRASS && block.getType() != Material.SNOW)
+        if (block.getType() != Material.AIR && block.getType() != Material.GRASS && block.getType() != Material.SNOW)
             return;
 
         //don't plant saplings next to other saplings or logs
@@ -321,7 +321,7 @@ public class EntityEventHandler implements Listener
                     Block aboveBlock = toHandle.getRelative(BlockFace.UP);
                     if (aboveBlock.getType() == Material.AIR)
                     {
-                        aboveBlock.setType(Material.TALL_GRASS);
+                        aboveBlock.setType(Material.GRASS);
                     }
                     continue;
                 }

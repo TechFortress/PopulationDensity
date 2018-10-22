@@ -208,7 +208,7 @@ public class WorldEventHandler implements Listener
                 {
                     Block block = entity.getLocation().getBlock();
                     Material blockType = block.getType();
-                    if (blockType == Material.TALL_GRASS || blockType == Material.AIR)
+                    if (blockType == Material.GRASS || blockType == Material.AIR)
                     {
                         block.setType(Material.FERN);
                     }

@@ -496,6 +496,7 @@ public class DataStore implements TabCompleter
                 blockType == Material.JUNGLE_LEAVES ||
                 blockType == Material.ACACIA_LEAVES ||
                 blockType == Material.DARK_OAK_LEAVES ||
+                blockType == Material.GRASS ||
                 blockType == Material.TALL_GRASS ||
                 blockType == Material.OAK_LOG ||
                 blockType == Material.SPRUCE_LOG ||
