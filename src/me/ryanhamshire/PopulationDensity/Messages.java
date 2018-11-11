@@ -64,5 +64,6 @@ public enum Messages
     RegionNamesOnlyLettersAndNumbers,
     RegionAlreadyNamed,
     HopperLimitReached,
-    OutsideWorldBorder
+    OutsideWorldBorder,
+    Wilderness,
 }

@@ -597,7 +597,7 @@ public class DataStore implements TabCompleter
         if (PopulationDensity.instance.topSignContent != null)
         {
             //build a sign on top with region name (or wilderness if no name)
-            if (regionName == null) regionName = "Wilderness";
+            if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
             setSign(x, y + 4, z, BlockFace.NORTH, PopulationDensity.instance.topSignContent, "%regionName%", regionName);
         }
@@ -607,25 +607,25 @@ public class DataStore implements TabCompleter
         {
             //add a sign for the region to the north
             regionName = this.getRegionName(new RegionCoordinates(region.x - 1, region.z));
-            if (regionName == null) regionName = "Wilderness";
+            if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
             setWallSign(x, y + 2, z + 1, BlockFace.SOUTH, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
 
             //add a sign for the region to the east
             regionName = this.getRegionName(new RegionCoordinates(region.x, region.z - 1));
-            if (regionName == null) regionName = "Wilderness";
+            if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
             setWallSign(x - 1, y + 2, z, BlockFace.WEST, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
 
             //add a sign for the region to the south
             regionName = this.getRegionName(new RegionCoordinates(region.x + 1, region.z));
-            if (regionName == null) regionName = "Wilderness";
+            if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
             setWallSign(x, y + 2, z - 1, BlockFace.NORTH, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
 
             //add a sign for the region to the west
             regionName = this.getRegionName(new RegionCoordinates(region.x, region.z + 1));
-            if (regionName == null) regionName = "Wilderness";
+            if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
             setWallSign(x + 1, y + 2, z, BlockFace.EAST, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
         }
@@ -778,6 +778,7 @@ public class DataStore implements TabCompleter
         this.addDefault(defaults, Messages.RegionAlreadyNamed, "This region already has a name.  To REname, use /RenameRegion.", null);
         this.addDefault(defaults, Messages.HopperLimitReached, "To prevent server lag, hoppers are limited to {0} per chunk.", "0: maximum hoppers per chunk");
         this.addDefault(defaults, Messages.OutsideWorldBorder, "The region you are attempting to teleport to is outside the world border.", null);
+        this.addDefault(defaults, Messages.Wilderness, "Wilderness", null);
 
         //load the config file
         FileConfiguration config = YamlConfiguration.loadConfiguration(new File(messagesFilePath));
