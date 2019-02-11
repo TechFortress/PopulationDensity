@@ -1,7 +1,7 @@
 name: PopulationDensity
 main: me.ryanhamshire.PopulationDensity.PopulationDensity
 softdepend: [Multiverse-Core, My Worlds, Transporter, MystCraft]
-version: 5.11.2
+version: ${project.version}
 api-version: 1.13
 commands:
    visit:
