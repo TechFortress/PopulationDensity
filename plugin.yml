@@ -1,7 +1,7 @@
 name: PopulationDensity
 main: me.ryanhamshire.PopulationDensity.PopulationDensity
 softdepend: [Multiverse-Core, My Worlds, Transporter, MystCraft]
-version: ${project.version}
+version: 5.11.2
 api-version: 1.13
 commands:
    visit:
@@ -40,7 +40,8 @@ commands:
       permission: populationdensity.addregion
    randomregion:
       description: Teleports you to a random region.
-      usage: /randomregion 
+      usage: /randomregion
+      permission: populationdensity.randomregion
    scanregion:
       description: Scans the region you're standing in for resources.
       usage: /ScanRegion
@@ -57,9 +58,6 @@ commands:
       description: Sets the login priority for a player.
       usage: /LoginPriority <player name> <priority, 0 - 100>
       permission: populationdensity.setloginpriority
-   randomregion:
-      description: Teleports the player to a random region.
-      usage: /randomregion
    thinentities:
       description: Forces entity thinning to run immediately.
       usage: /thinentities
@@ -71,6 +69,7 @@ commands:
    lag:
       description: Checks for server CPU lag.
       usage: /lag
+      permission: populationdensity.lag
    listregions:
       description: Lists all available regions.
       usage: /listregions
@@ -96,6 +95,8 @@ permissions:
             populationdensity.nameregion: true
             populationdensity.renameregion: true
             populationdensity.unlimitedhoppers: true
+            populationdensity.randomregion: true
+            populationdensity.lag: true
     populationdensity.newestregion:
         description: Grants permission to use /NewestRegion.
         default: op
@@ -143,4 +144,10 @@ permissions:
         default: true
     populationdensity.unlimitedhoppers:
         description: Players with this permission node ignore the hoppers-per-chunk limit defined in the config file.
+        default: op
+    populationdensity.randomregion:
+        description: Teleports the player to a random region.
+        default: op
+    populationdensity.lag:
+        description: Provides detailed server statistic information.
         default: op
