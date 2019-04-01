@@ -643,7 +643,7 @@ public class PopulationDensity extends JavaPlugin
 
             @SuppressWarnings("deprecation")
             Player targetPlayer = this.getServer().getPlayerExact(args[0]);
-            if (targetPlayer != null)
+            if (targetPlayer != null && player.canSee(targetPlayer))
             {
                 PlayerData targetPlayerData = this.dataStore.getPlayerData(targetPlayer);
                 if (playerData.inviter != null && playerData.inviter.getName().equals(targetPlayer.getName()))
@@ -825,7 +825,7 @@ public class PopulationDensity extends JavaPlugin
             //send a notification to the invitee, if he's available
             @SuppressWarnings("deprecation")
             Player invitee = this.getServer().getPlayer(args[0]);
-            if (invitee != null)
+            if (invitee != null && player.canSee(invitee))
             {
                 playerData = this.dataStore.getPlayerData(invitee);
                 if (playerData.inviter == player)
