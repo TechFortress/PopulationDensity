@@ -950,28 +950,6 @@ public class PopulationDensity extends JavaPlugin
 
                 return true;
             }
-        } else if (cmd.getName().equalsIgnoreCase("randomregion") && player != null)
-        {
-            CanTeleportResult result = this.playerCanTeleport(player, false);
-            if (!result.canTeleport) return true;
-
-            RegionCoordinates randomRegion = this.dataStore.getRandomRegion(RegionCoordinates.fromLocation(player.getLocation()));
-
-            if (randomRegion == null)
-            {
-                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoMoreRegions);
-            } else
-            {
-                if (result.nearPost && this.launchPlayer(player))
-                {
-                    this.TeleportPlayer(player, randomRegion, 1);
-                } else
-                {
-                    this.TeleportPlayer(player, randomRegion, 0);
-                }
-            }
-
-            return true;
         } else if (cmd.getName().equalsIgnoreCase("thinentities"))
         {
             if (player != null)
