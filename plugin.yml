@@ -147,7 +147,7 @@ permissions:
         default: op
     populationdensity.randomregion:
         description: Teleports the player to a random region.
-        default: op
+        default: true
     populationdensity.lag:
         description: Provides detailed server statistic information.
-        default: op
+        default: true
