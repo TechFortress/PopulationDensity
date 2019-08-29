@@ -47,9 +47,7 @@ import org.bukkit.util.Vector;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
@@ -68,8 +66,8 @@ public class PopulationDensity extends JavaPlugin
     //developer configuration, not modifiable by users
     public static final int REGION_SIZE = 400;
 
-    //the world managed by this plugin
-    public static World ManagedWorld;
+    //the world(s) managed by this plugin
+    public static List<World> ManagedWorlds = new ArrayList<>();
 
     //the default world, not managed by this plugin
     //(may be null in some configurations)
@@ -92,7 +90,7 @@ public class PopulationDensity extends JavaPlugin
     public boolean newPlayersSpawnInHomeRegion;
     public boolean respawnInHomeRegion;
     public String cityWorldName;
-    public String managedWorldName;
+    public List<String> managedWorldNames;
     public int maxDistanceFromSpawnToUseHomeRegion;
     public double densityRatio;
     public int maxIdleMinutes;
@@ -198,7 +196,18 @@ public class PopulationDensity extends JavaPlugin
         this.respawnInHomeRegion = config.getBoolean("PopulationDensity.RespawnInHomeRegion", true);
         this.cityWorldName = config.getString("PopulationDensity.CityWorldName", "");
         this.maxDistanceFromSpawnToUseHomeRegion = config.getInt("PopulationDensity.MaxDistanceFromSpawnToUseHomeRegion", 25);
-        this.managedWorldName = config.getString("PopulationDensity.ManagedWorldName", defaultManagedWorldName);
+
+        this.managedWorldNames = config.getStringList("PopulationDensity.ManagedWorldNames");
+        if (this.managedWorldNames.size() == 0) this.managedWorldNames = Collections.singletonList(defaultManagedWorldName);
+        for (String worldName : managedWorldNames) {
+            World world = this.getServer().getWorld(worldName);
+            if (world == null || !normalWorlds.contains(world)) {
+                AddLogEntry("World \"" + worldName + "\" does not exist on this server.");
+                continue;
+            }
+            ManagedWorlds.add(world);
+        }
+
         this.densityRatio = config.getDouble("PopulationDensity.DensityRatio", 1.0);
         this.maxIdleMinutes = config.getInt("PopulationDensity.MaxIdleMinutes", 10);
         this.enableLoginQueue = config.getBoolean("PopulationDensity.LoginQueueEnabled", true);
@@ -388,7 +397,7 @@ public class PopulationDensity extends JavaPlugin
         outConfig.set("PopulationDensity.AllowTeleportation", this.allowTeleportation);
         outConfig.set("PopulationDensity.TeleportFromAnywhere", this.teleportFromAnywhere);
         outConfig.set("PopulationDensity.MaxDistanceFromSpawnToUseHomeRegion", this.maxDistanceFromSpawnToUseHomeRegion);
-        outConfig.set("PopulationDensity.ManagedWorldName", this.managedWorldName);
+        outConfig.set("PopulationDensity.ManagedWorldNames", this.managedWorldNames);
         outConfig.set("PopulationDensity.DensityRatio", this.densityRatio);
         outConfig.set("PopulationDensity.MaxIdleMinutes", this.maxIdleMinutes);
         outConfig.set("PopulationDensity.LoginQueueEnabled", this.enableLoginQueue);
@@ -450,16 +459,9 @@ public class PopulationDensity extends JavaPlugin
             AddLogEntry("Unable to write to the configuration file at \"" + DataStore.configFilePath + "\"");
         }
 
-        //get a reference to the managed world
-        if (this.managedWorldName == null || this.managedWorldName.isEmpty())
+        if (ManagedWorlds.isEmpty())
         {
-            PopulationDensity.AddLogEntry("Please specify a world to manage in config.yml.");
-            return;
-        }
-        ManagedWorld = this.getServer().getWorld(this.managedWorldName);
-        if (ManagedWorld == null)
-        {
-            PopulationDensity.AddLogEntry("Could not find a world named \"" + this.managedWorldName + "\".  Please update your config.yml.");
+            PopulationDensity.AddLogEntry("No manageable worlds could be found. Please update your config.yml.");
             return;
         }
 
@@ -506,7 +508,9 @@ public class PopulationDensity extends JavaPlugin
         //scan the open region for resources and open a new one as necessary
         //may open and close several regions before finally leaving an "acceptable" region open
         //this will repeat every six hours
-        this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScanOpenRegionTask(), 5L, this.hoursBetweenScans * 60 * 60 * 20L);
+        for (World world : ManagedWorlds) {
+            this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScanOpenRegionTask(world), 5L, this.hoursBetweenScans * 60 * 60 * 20L);
+        }
 
         //start monitoring performance
         this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new MonitorPerformanceTask(), 1200L, 1200L);
@@ -625,9 +629,9 @@ public class PopulationDensity extends JavaPlugin
         {
             player = (Player)sender;
 
-            if (ManagedWorld == null)
+            if (!ManagedWorlds.contains(player.getWorld()))
             {
-                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoManagedWorld);
+                PopulationDensity.sendMessage(player, TextMode.Err, Messages.WorldNotManaged);
                 return true;
             }
 
@@ -707,7 +711,7 @@ public class PopulationDensity extends JavaPlugin
             if (!result.canTeleport) return true;
 
             //teleport the user to the open region
-            RegionCoordinates openRegion = this.dataStore.getOpenRegion();
+            RegionCoordinates openRegion = this.dataStore.getOpenRegion(player.getWorld());
             if (result.nearPost && this.launchPlayer(player))
             {
                 this.TeleportPlayer(player, openRegion, 1);
@@ -760,7 +764,7 @@ public class PopulationDensity extends JavaPlugin
 
             try
             {
-                this.dataStore.AddRegionPost(currentRegion);
+                this.dataStore.AddRegionPost(player.getWorld(), currentRegion);
             }
             catch (ChunkLoadException e) {}  //ignore.  post will be auto-built when the chunk is loaded later
 
@@ -876,7 +880,7 @@ public class PopulationDensity extends JavaPlugin
         } else if (cmd.getName().equalsIgnoreCase("sethomeregion") && player != null)
         {
             //if not in the managed world, /movein doesn't make sense
-            if (!player.getWorld().equals(ManagedWorld))
+            if (!ManagedWorlds.contains(player.getWorld()))
             {
                 PopulationDensity.sendMessage(player, TextMode.Err, Messages.NotInRegion);
                 return true;
@@ -893,7 +897,7 @@ public class PopulationDensity extends JavaPlugin
         {
             PopulationDensity.sendMessage(player, TextMode.Success, Messages.AddRegionConfirmation);
 
-            RegionCoordinates newRegion = this.dataStore.addRegion();
+            RegionCoordinates newRegion = this.dataStore.addRegion(player.getWorld());
 
             this.scanRegion(newRegion, true);
 
@@ -1027,7 +1031,7 @@ public class PopulationDensity extends JavaPlugin
         //update post
         try
         {
-            this.dataStore.AddRegionPost(currentRegion);
+            this.dataStore.AddRegionPost(player.getWorld(), currentRegion);
         }
         catch (ChunkLoadException e) {}  //ignore.  post will be auto-rebuilt when the chunk is loaded later
 
@@ -1117,7 +1121,7 @@ public class PopulationDensity extends JavaPlugin
         if (this.teleportFromAnywhere) return new CanTeleportResult(true);
 
         //avoid teleporting from other worlds
-        if (!player.getWorld().equals(ManagedWorld) && (CityWorld == null || !player.getWorld().equals(CityWorld)))
+        if (!ManagedWorlds.contains(player.getWorld()) && (CityWorld == null || !player.getWorld().equals(CityWorld)))
         {
             PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoTeleportThisWorld);
             return new CanTeleportResult(false);
@@ -1207,7 +1211,7 @@ public class PopulationDensity extends JavaPlugin
         teleportDestination.setZ(teleportDestination.getBlockZ() + 0.5D);
 
         // Check the world border
-        WorldBorder border = ManagedWorld.getWorldBorder();
+        WorldBorder border = player.getWorld().getWorldBorder();
         double size = border.getSize() / 2;
         Location center = border.getCenter();
         double x = teleportDestination.getBlockX() - center.getX(),
@@ -1221,7 +1225,7 @@ public class PopulationDensity extends JavaPlugin
 
         //drop the player from the sky //RoboMWM - only if LaunchAndDropPlayers is enabled
         if (doDrop && !player.getGameMode().equals(GameMode.SPECTATOR))
-            teleportDestination = new Location(ManagedWorld, teleportDestination.getX(), ManagedWorld.getMaxHeight() + 10, teleportDestination.getZ(), player.getLocation().getYaw(), 90);
+            teleportDestination = new Location(player.getWorld(), teleportDestination.getX(), player.getWorld().getMaxHeight() + 10, teleportDestination.getZ(), player.getLocation().getYaw(), 90);
         new TeleportPlayerTask(player, teleportDestination, doDrop, instance, dropShipTeleporterInstance).runTaskLater(this, delaySeconds * 20L);
 
         //kill bad guys in the area
@@ -1241,8 +1245,8 @@ public class PopulationDensity extends JavaPlugin
         int min_z = regionCenter.getBlockZ() - REGION_SIZE / 2;
         int max_z = regionCenter.getBlockZ() + REGION_SIZE / 2;
 
-        Chunk lesserBoundaryChunk = ManagedWorld.getChunkAt(new Location(ManagedWorld, min_x, 1, min_z));
-        Chunk greaterBoundaryChunk = ManagedWorld.getChunkAt(new Location(ManagedWorld, max_x, 1, max_z));
+        Chunk lesserBoundaryChunk = region.world.getChunkAt(new Location(region.world, min_x, 1, min_z));
+        Chunk greaterBoundaryChunk = region.world.getChunkAt(new Location(region.world, max_x, 1, max_z));
 
         ChunkSnapshot[][] snapshots = new ChunkSnapshot[greaterBoundaryChunk.getX() - lesserBoundaryChunk.getX() + 1][greaterBoundaryChunk.getZ() - lesserBoundaryChunk.getZ() + 1];
         for (int x = 0; x < snapshots.length; x++)
@@ -1261,7 +1265,7 @@ public class PopulationDensity extends JavaPlugin
                 if (snapshots[x][z] != null) continue;
 
                 //get the chunk, load it, generate it if necessary
-                Chunk chunk = ManagedWorld.getChunkAt(x + lesserBoundaryChunk.getX(), z + lesserBoundaryChunk.getZ());
+                Chunk chunk = region.world.getChunkAt(x + lesserBoundaryChunk.getX(), z + lesserBoundaryChunk.getZ());
                 if (chunk.isLoaded() || chunk.load(true))
                 {
                     //take a snapshot
@@ -1272,7 +1276,7 @@ public class PopulationDensity extends JavaPlugin
         }
 
         //create a new task with this information, which will more completely scan the content of all the snapshots
-        ScanRegionTask task = new ScanRegionTask(snapshots, openNewRegions);
+        ScanRegionTask task = new ScanRegionTask(region.world, snapshots, openNewRegions);
         task.setPriority(Thread.MIN_PRIORITY);
 
         //run it in a separate thread
@@ -1282,10 +1286,10 @@ public class PopulationDensity extends JavaPlugin
     //ensures a piece of the managed world is loaded into server memory
     //(generates the chunk if necessary)
     //these coordinate params are BLOCK coordinates, not CHUNK coordinates
-    public static void GuaranteeChunkLoaded(int x, int z) throws ChunkLoadException
+    public static void GuaranteeChunkLoaded(World world, int x, int z) throws ChunkLoadException
     {
-        Location location = new Location(ManagedWorld, x, 5, z);
-        Chunk chunk = ManagedWorld.getChunkAt(location);
+        Location location = new Location(world, x, 5, z);
+        Chunk chunk = world.getChunkAt(location);
         if (!chunk.isLoaded())
         {
             if (!chunk.load(true))
@@ -1303,9 +1307,9 @@ public class PopulationDensity extends JavaPlugin
         x = region.x * REGION_SIZE + REGION_SIZE / 2;
         z = region.z * REGION_SIZE + REGION_SIZE / 2;
 
-        Location center = new Location(ManagedWorld, x, PopulationDensity.instance.minimumRegionPostY, z);
+        Location center = new Location(region.world, x, PopulationDensity.instance.minimumRegionPostY, z);
 
-        if (computeY) center = ManagedWorld.getHighestBlockAt(center).getLocation();
+        if (computeY) center = region.world.getHighestBlockAt(center).getLocation();
 
         return center;
     }

@@ -70,7 +70,7 @@ public class WorldEventHandler implements Listener
         }
 
         //nothing more to do in worlds other than the managed world
-        if (chunk.getWorld() != PopulationDensity.ManagedWorld) return;
+        if (!PopulationDensity.ManagedWorlds.contains(chunk.getWorld())) return;
 
         //find the boundaries of the chunk
         Location lesserCorner = chunk.getBlock(0, 0, 0).getLocation();
@@ -87,7 +87,7 @@ public class WorldEventHandler implements Listener
             //create a task to build the post after 10 seconds
             try
             {
-                PopulationDensity.instance.dataStore.AddRegionPost(region);
+                PopulationDensity.instance.dataStore.AddRegionPost(chunk.getWorld(), region);
             }
             catch (ChunkLoadException ignored){}  //this should never happen, because the chunk is loaded (why else would onChunkLoad() be invoked?)
         }
@@ -170,7 +170,7 @@ public class WorldEventHandler implements Listener
             return;
 
         //nothing more to do in worlds other than the managed world
-        if (chunk.getWorld() != PopulationDensity.ManagedWorld) return;
+        if (PopulationDensity.ManagedWorlds.contains(chunk.getWorld())) return;
 
         //don't allow the new player spawn point chunk to unload
         //RoboMWM: provided keepSpawnRegionLoaded is set to true
@@ -182,7 +182,7 @@ public class WorldEventHandler implements Listener
         //if the region is the new player region
         //RoboMWM: Or if server owner wants to keep all region posts loaded...
         RegionCoordinates region = RegionCoordinates.fromLocation(lesserCorner);
-        if (region.equals(PopulationDensity.instance.dataStore.getOpenRegion()) || PopulationDensity.instance.config_keepAllRegionPostsLoaded)
+        if (region.equals(PopulationDensity.instance.dataStore.getOpenRegion(region.world)) || PopulationDensity.instance.config_keepAllRegionPostsLoaded)
         {
             Location regionCenter = PopulationDensity.getRegionCenter(region, false);
 

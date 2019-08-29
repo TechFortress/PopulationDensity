@@ -20,7 +20,7 @@ package me.ryanhamshire.PopulationDensity;
 
 public enum Messages
 {
-    NoManagedWorld,
+    WorldNotManaged,
     NoBreakPost,
     NoBreakSpawn,
     NoBuildPost,

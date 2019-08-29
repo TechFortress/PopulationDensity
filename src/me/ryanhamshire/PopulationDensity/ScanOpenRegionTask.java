@@ -18,12 +18,20 @@
 
 package me.ryanhamshire.PopulationDensity;
 
+import org.bukkit.World;
+
 public class ScanOpenRegionTask implements Runnable
 {
+    private World world;
+
+    public ScanOpenRegionTask(World world) {
+        this.world = world;
+    }
+
     @Override
     public void run()
     {
         //start a scan on the currently open region
-        PopulationDensity.instance.scanRegion(PopulationDensity.instance.dataStore.getOpenRegion(), true);
+        PopulationDensity.instance.scanRegion(PopulationDensity.instance.dataStore.getOpenRegion(world), true);
     }
 }

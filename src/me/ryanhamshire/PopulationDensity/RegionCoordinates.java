@@ -19,15 +19,18 @@
 package me.ryanhamshire.PopulationDensity;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 
 public class RegionCoordinates
 {
+    public World world;
     public int x;
     public int z;
 
     //basic boring stuff (yawn)
-    public RegionCoordinates(int x, int z)
+    public RegionCoordinates(World world, int x, int z)
     {
+        this.world = world;
         this.x = x;
         this.z = z;
     }
@@ -37,8 +40,8 @@ public class RegionCoordinates
     //TRIVIA!  despite the simplicity of this method, I got it badly wrong like 5 times before it was finally fixed
     public static RegionCoordinates fromLocation(Location location)
     {
-        //not managed world?  return null
-        if (!location.getWorld().equals(PopulationDensity.ManagedWorld)) return null;
+        //not managed world? return null
+        if (!PopulationDensity.ManagedWorlds.contains(location.getWorld())) return null;
 
         //keeping all regions the same size and arranging them in a strict grid makes this calculation supa-fast!
         //that's important because we do it A LOT as players move, build, break blocks, and more
@@ -48,7 +51,7 @@ public class RegionCoordinates
         int z = location.getBlockZ() / PopulationDensity.REGION_SIZE;
         if (location.getZ() < 0) z--;
 
-        return new RegionCoordinates(x, z);
+        return new RegionCoordinates(location.getWorld(), x, z);
     }
 
     //converts a string representing region coordinates to a proper region coordinates object
@@ -56,21 +59,20 @@ public class RegionCoordinates
     public RegionCoordinates(String string)
     {
         //split the input string on the space
-        String[] elements = string.split(" ");
+        String[] elements = string.split(",");
+        String[] coords = elements[1].split(" ");
 
-        //expect two elements - X and Z, respectively
-        String xString = elements[0];
-        String zString = elements[1];
+        this.world = PopulationDensity.ManagedWorlds.stream()
+                .filter((w) -> w.getName().equals(elements[0]))
+                .findFirst().orElse(PopulationDensity.ManagedWorlds.get(0));
 
-        //convert those to integer values
-        this.x = Integer.parseInt(xString);
-        this.z = Integer.parseInt(zString);
+        this.x = Integer.parseInt(coords[0]);
+        this.z = Integer.parseInt(coords[1]);
     }
 
     //opposite of above - converts region coordinates to a handy string
-    public String toString()
-    {
-        return Integer.toString(this.x) + " " + Integer.toString(this.z);
+    public String toString(){
+        return world.getName() + "," + Integer.toString(this.x) + " " + Integer.toString(this.z);
     }
 
     //compares two region coordinates to see if they match
@@ -83,7 +85,7 @@ public class RegionCoordinates
 
         RegionCoordinates coords = (RegionCoordinates)coordinatesToCompare;
 
-        return this.x == coords.x && this.z == coords.z;
+        return this.world == coords.world && this.x == coords.x && this.z == coords.z;
     }
 
     @Override

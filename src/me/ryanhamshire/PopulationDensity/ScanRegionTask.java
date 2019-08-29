@@ -20,19 +20,22 @@ package me.ryanhamshire.PopulationDensity;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
+import org.bukkit.World;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ScanRegionTask extends Thread
 {
+    private World world;
     private ChunkSnapshot[][] chunks;
     private boolean openNewRegions;
 
     private final int CHUNK_SIZE = 16;
 
-    public ScanRegionTask(ChunkSnapshot chunks[][], boolean openNewRegions)
+    public ScanRegionTask(World world, ChunkSnapshot chunks[][], boolean openNewRegions)
     {
+        this.world = world;
         this.chunks = chunks;
         this.openNewRegions = openNewRegions;
     }
@@ -73,7 +76,7 @@ public class ScanRegionTask extends Thread
         int playerBlocks = 0;
 
         //initialize a new array to track where we've been
-        int maxHeight = PopulationDensity.ManagedWorld.getMaxHeight();
+        int maxHeight = world.getMaxHeight();
         int x, y, z;
         x = y = z = 0;
         boolean[][][] examined = new boolean[this.chunks.length * CHUNK_SIZE][maxHeight][this.chunks.length * CHUNK_SIZE];
@@ -394,7 +397,7 @@ public class ScanRegionTask extends Thread
         }
 
         //now that we're done, notify the main thread
-        ScanResultsTask resultsTask = new ScanResultsTask(logEntries, openNewRegions);
+        ScanResultsTask resultsTask = new ScanResultsTask(world, logEntries, openNewRegions);
         PopulationDensity.instance.getServer().getScheduler().scheduleSyncDelayedTask(PopulationDensity.instance, resultsTask, 5L);
     }
 
