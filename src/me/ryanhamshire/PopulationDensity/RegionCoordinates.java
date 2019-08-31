@@ -85,7 +85,7 @@ public class RegionCoordinates
 
         RegionCoordinates coords = (RegionCoordinates)coordinatesToCompare;
 
-        return this.world == coords.world && this.x == coords.x && this.z == coords.z;
+        return this.world.equals(coords.world) && this.x == coords.x && this.z == coords.z;
     }
 
     @Override
