@@ -61,7 +61,7 @@ public class DataStore implements TabCompleter
     private String[] messages;
 
     //currently open regions
-    private ConcurrentHashMap<World, RegionCoordinates> openRegionCoordinates = new ConcurrentHashMap<>();
+    private Map<World, RegionCoordinates> openRegionCoordinates = new ConcurrentHashMap<>();
 
     //coordinates of the next region which will be opened, if one needs to be opened
     private Map<World, RegionCoordinates> nextRegionCoordinates = new ConcurrentHashMap<>();
