@@ -26,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Tag;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
@@ -50,11 +51,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataStore implements TabCompleter
 {
@@ -71,15 +73,15 @@ public class DataStore implements TabCompleter
     //in-memory cache for messages
     private String[] messages;
 
-    //currently open region
-    private RegionCoordinates openRegionCoordinates;
+    //currently open regions
+    private Map<World, RegionCoordinates> openRegionCoordinates = new ConcurrentHashMap<>();
 
     //coordinates of the next region which will be opened, if one needs to be opened
-    private RegionCoordinates nextRegionCoordinates;
+    private Map<World, RegionCoordinates> nextRegionCoordinates = new ConcurrentHashMap<>();
 
     //region data cache
-    private ConcurrentHashMap<String, RegionCoordinates> nameToCoordsMap = new ConcurrentHashMap<String, RegionCoordinates>();
-    private ConcurrentHashMap<RegionCoordinates, String> coordsToNameMap = new ConcurrentHashMap<RegionCoordinates, String>();
+    private ConcurrentHashMap<String, RegionCoordinates> nameToCoordsMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<RegionCoordinates, String> coordsToNameMap = new ConcurrentHashMap<>();
 
     //initialization!
     public DataStore(List<String> regionNames)
@@ -117,17 +119,19 @@ public class DataStore implements TabCompleter
         }
 
         //study region data and initialize both this.openRegionCoordinates and this.nextRegionCoordinates
-        this.findNextRegion();
-
-        //if no regions were loaded, create the first one
-        if (nameToCoordsMap.keySet().size() == 0)
+        for (World world : PopulationDensity.ManagedWorlds)
         {
-            PopulationDensity.AddLogEntry("Please be patient while I search for a good new player starting point!");
-            PopulationDensity.AddLogEntry("This initial scan could take a while, especially for worlds where players have already been building.");
-            this.addRegion();
-        }
+            this.findNextRegion(world);
 
-        PopulationDensity.AddLogEntry("Open region: \"" + this.getRegionName(this.getOpenRegion()) + "\" at " + this.getOpenRegion().toString() + ".");
+            if (nameToCoordsMap.keySet().size() == 0)
+            {
+                PopulationDensity.AddLogEntry("Please be patient while I search for a good new player starting point in \"" + world.getName() + "\"!");
+                PopulationDensity.AddLogEntry("This initial scan could take a while, especially for worlds where players have already been building.");
+                this.addRegion(world);
+            }
+
+            PopulationDensity.AddLogEntry("Open region: \"" + this.getRegionName(this.getOpenRegion(world)) + "\" at " + this.getOpenRegion(world).toString() + ".");
+        }
     }
 
     //used in the spiraling code below (see findNextRegion())
@@ -140,7 +144,7 @@ public class DataStore implements TabCompleter
     //sets private variables for openRegion and nextRegion when it's done
     //this may look like black magic, but seriously, it produces a tight spiral on a grid
     //coding this made me reminisce about seemingly pointless computer science exercises in college
-    public int findNextRegion()
+    public int findNextRegion(World world)
     {
         //spiral out from region coordinates 0, 0 until we find coordinates for an uninitialized region
         int x = 0;
@@ -153,14 +157,14 @@ public class DataStore implements TabCompleter
         Direction direction = Direction.down;   //direction to search
         int sideLength = 1;                    //maximum number of regions to move in this direction before changing directions
         int side = 0;                            //increments each time we change directions.  this tells us when to add length to each side
-        this.openRegionCoordinates = new RegionCoordinates(0, 0);
-        this.nextRegionCoordinates = new RegionCoordinates(0, 0);
+        this.openRegionCoordinates.put(world, new RegionCoordinates(world, 0, 0));
+        this.nextRegionCoordinates.put(world, new RegionCoordinates(world, 0, 0));
 
         //while the next region coordinates are taken, walk the spiral
-        while (this.getRegionName(this.nextRegionCoordinates) != null)
+        while (this.getRegionName(this.nextRegionCoordinates.get(world)) != null)
         {
             //loop for one side of the spiral
-            for (int i = 0; i < sideLength && this.getRegionName(this.nextRegionCoordinates) != null; i++)
+            for (int i = 0; i < sideLength && this.getRegionName(this.nextRegionCoordinates.get(world)) != null; i++)
             {
                 regionCount++;
 
@@ -171,7 +175,7 @@ public class DataStore implements TabCompleter
                 else x++;
 
                 this.openRegionCoordinates = this.nextRegionCoordinates;
-                this.nextRegionCoordinates = new RegionCoordinates(x, z);
+                this.nextRegionCoordinates.put(world, new RegionCoordinates(world, x, z));
             }
 
             //after finishing a side, change directions
@@ -199,7 +203,7 @@ public class DataStore implements TabCompleter
         //initialize random number generator with a seed based the current time
         Random randomGenerator = new Random();
 
-        ArrayList<RegionCoordinates> possibleDestinations = new ArrayList<RegionCoordinates>();
+        List<RegionCoordinates> possibleDestinations = new ArrayList<>();
         for (RegionCoordinates coords : this.coordsToNameMap.keySet())
         {
             if (!coords.equals(regionToAvoid))
@@ -357,7 +361,7 @@ public class DataStore implements TabCompleter
     }
 
     //adds a new region, assigning it a name and updating local variables accordingly
-    public RegionCoordinates addRegion()
+    public RegionCoordinates addRegion(World world)
     {
         //first, find a unique name for the new region
         String newRegionName;
@@ -379,12 +383,12 @@ public class DataStore implements TabCompleter
 
         } while (this.getRegionCoordinates(newRegionName) != null);
 
-        this.privateNameRegion(this.nextRegionCoordinates, newRegionName);
+        this.privateNameRegion(this.nextRegionCoordinates.get(world), newRegionName);
 
         //find the next region in the spiral (updates this.openRegionCoordinates and this.nextRegionCoordinates)
-        this.findNextRegion();
+        this.findNextRegion(world);
 
-        return this.openRegionCoordinates;
+        return this.openRegionCoordinates.get(world);
     }
 
     //names a region, never throws an exception for name content
@@ -446,9 +450,9 @@ public class DataStore implements TabCompleter
     }
 
     //retrieves the open region's coordinates
-    public RegionCoordinates getOpenRegion()
+    public RegionCoordinates getOpenRegion(World world)
     {
-        return this.openRegionCoordinates;
+        return this.openRegionCoordinates.get(world);
     }
 
     //goes to disk to get the name of a region, given its coordinates
@@ -464,7 +468,7 @@ public class DataStore implements TabCompleter
     }
 
     //actually edits the world to create a region post at the center of the specified region
-    public void AddRegionPost(RegionCoordinates region) throws ChunkLoadException
+    public void AddRegionPost(World world, RegionCoordinates region) throws ChunkLoadException
     {
         //if region post building is disabled, don't do anything
         if (!PopulationDensity.instance.buildRegionPosts) return;
@@ -476,19 +480,19 @@ public class DataStore implements TabCompleter
         int y;
 
         //make sure data is loaded for that area, because we're about to request data about specific blocks there
-        PopulationDensity.GuaranteeChunkLoaded(x, z);
+        PopulationDensity.GuaranteeChunkLoaded(world, x, z);
 
         //sink lower until we find something solid
         //also ignore glowstone, in case there's already a post here!
         Material blockType;
 
         //find the highest block.  could be the surface, a tree, some grass...
-        y = PopulationDensity.ManagedWorld.getHighestBlockYAt(x, z) + 1;
+        y = world.getHighestBlockYAt(x, z) + 1;
 
         //posts fall through trees, snow, and any existing post looking for the ground
         do
         {
-            blockType = PopulationDensity.ManagedWorld.getBlockAt(x, --y, z).getType();
+            blockType = world.getBlockAt(x, --y, z).getType();
         }
         while (y > 0 && (blockType == Material.AIR ||
                 blockType == Material.OAK_LEAVES ||
@@ -536,7 +540,7 @@ public class DataStore implements TabCompleter
             {
                 for (int y1 = y + 1; y1 <= y + 5; y1++)
                 {
-                    Block block = PopulationDensity.ManagedWorld.getBlockAt(x1, y1, z1);
+                    Block block = world.getBlockAt(x1, y1, z1);
                     if (Tag.SIGNS.isTagged(block.getType()) || Tag.WALL_SIGNS.isTagged(block.getType()))
                         block.setType(Material.AIR);
                 }
@@ -550,7 +554,7 @@ public class DataStore implements TabCompleter
             {
                 for (int y1 = y + 1; y1 < y + 10; y1++)
                 {
-                    Block block = PopulationDensity.ManagedWorld.getBlockAt(x1, y1, z1);
+                    Block block = world.getBlockAt(x1, y1, z1);
                     if (block.getType() != Material.AIR) block.setType(Material.AIR);
                 }
             }
@@ -559,27 +563,27 @@ public class DataStore implements TabCompleter
         //Sometimes we don't clear high enough thanks to new ultra tall trees in jungle biomes
         //Instead of attempting to clear up to nearly 110 * 4 blocks more, we'll just see what getHighestBlockYAt returns
         //If it doesn't return our post's y location, we're setting it and all blocks below to air.
-        int highestBlockY = PopulationDensity.ManagedWorld.getHighestBlockYAt(x, z);
+        int highestBlockY = world.getHighestBlockYAt(x, z);
         while (highestBlockY > y)
         {
-            Block block = PopulationDensity.ManagedWorld.getBlockAt(x, highestBlockY, z);
+            Block block = world.getBlockAt(x, highestBlockY, z);
             if (block.getType() != Material.AIR)
                 block.setType(Material.AIR);
             highestBlockY--;
         }
 
         //build post
-        PopulationDensity.ManagedWorld.getBlockAt(x, y + 3, z).setType(PopulationDensity.instance.postMaterialTop);
-        PopulationDensity.ManagedWorld.getBlockAt(x, y + 2, z).setType(PopulationDensity.instance.postMaterialMidTop);
-        PopulationDensity.ManagedWorld.getBlockAt(x, y + 1, z).setType(PopulationDensity.instance.postMaterialMidBottom);
-        PopulationDensity.ManagedWorld.getBlockAt(x, y, z).setType(PopulationDensity.instance.postMaterialBottom);
+        world.getBlockAt(x, y + 3, z).setType(PopulationDensity.instance.postMaterialTop);
+        world.getBlockAt(x, y + 2, z).setType(PopulationDensity.instance.postMaterialMidTop);
+        world.getBlockAt(x, y + 1, z).setType(PopulationDensity.instance.postMaterialMidBottom);
+        world.getBlockAt(x, y, z).setType(PopulationDensity.instance.postMaterialBottom);
 
         //build outer platform
         for (int x1 = x - 2; x1 <= x + 2; x1++)
         {
             for (int z1 = z - 2; z1 <= z + 2; z1++)
             {
-                PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.outerPlatformMaterial);
+                world.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.outerPlatformMaterial);
             }
         }
 
@@ -588,7 +592,7 @@ public class DataStore implements TabCompleter
         {
             for (int z1 = z - 1; z1 <= z + 1; z1++)
             {
-                PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.innerPlatformMaterial);
+                world.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.innerPlatformMaterial);
             }
         }
 
@@ -600,35 +604,35 @@ public class DataStore implements TabCompleter
             //build a sign on top with region name (or wilderness if no name)
             if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
-            setSign(x, y + 4, z, BlockFace.NORTH, PopulationDensity.instance.topSignContent, "%regionName%", regionName);
+            setSign(world, x, y + 4, z, BlockFace.NORTH, PopulationDensity.instance.topSignContent, "%regionName%", regionName);
         }
 
         //If the side sign configuration is not null
         if (PopulationDensity.instance.sideSignContent != null)
         {
             //add a sign for the region to the north
-            regionName = this.getRegionName(new RegionCoordinates(region.x - 1, region.z));
+            regionName = this.getRegionName(new RegionCoordinates(world, region.x - 1, region.z));
             if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
-            setWallSign(x, y + 2, z + 1, BlockFace.SOUTH, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
+            setWallSign(world, x, y + 2, z + 1, BlockFace.SOUTH, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
 
             //add a sign for the region to the east
-            regionName = this.getRegionName(new RegionCoordinates(region.x, region.z - 1));
+            regionName = this.getRegionName(new RegionCoordinates(world, region.x, region.z - 1));
             if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
-            setWallSign(x - 1, y + 2, z, BlockFace.WEST, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
+            setWallSign(world, x - 1, y + 2, z, BlockFace.WEST, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
 
             //add a sign for the region to the south
-            regionName = this.getRegionName(new RegionCoordinates(region.x + 1, region.z));
+            regionName = this.getRegionName(new RegionCoordinates(world, region.x + 1, region.z));
             if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
-            setWallSign(x, y + 2, z - 1, BlockFace.NORTH, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
+            setWallSign(world, x, y + 2, z - 1, BlockFace.NORTH, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
 
             //add a sign for the region to the west
-            regionName = this.getRegionName(new RegionCoordinates(region.x, region.z + 1));
+            regionName = this.getRegionName(new RegionCoordinates(world, region.x, region.z + 1));
             if (regionName == null) regionName = getMessage(Messages.Wilderness);
             regionName = PopulationDensity.capitalize(regionName);
-            setWallSign(x + 1, y + 2, z, BlockFace.EAST, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
+            setWallSign(world, x + 1, y + 2, z, BlockFace.EAST, PopulationDensity.instance.sideSignContent, "%regionName%", regionName);
         }
 
         //if teleportation is enabled, also add a sign facing north and south for teleportation help
@@ -636,41 +640,41 @@ public class DataStore implements TabCompleter
         {
             if (PopulationDensity.instance.instructionsSignContent != null)
             {
-                setWallSign(x - 1, y + 3, z, BlockFace.WEST, PopulationDensity.instance.instructionsSignContent);
-                setWallSign(x + 1, y + 3, z, BlockFace.EAST, PopulationDensity.instance.instructionsSignContent);
+                setWallSign(world, x - 1, y + 3, z, BlockFace.WEST, PopulationDensity.instance.instructionsSignContent);
+                setWallSign(world, x + 1, y + 3, z, BlockFace.EAST, PopulationDensity.instance.instructionsSignContent);
             }
         }
 
         //custom signs
         if (PopulationDensity.instance.mainCustomSignContent != null)
         {
-            setWallSign(x, y + 3, z - 1, BlockFace.NORTH, PopulationDensity.instance.mainCustomSignContent);
+            setWallSign(world, x, y + 3, z - 1, BlockFace.NORTH, PopulationDensity.instance.mainCustomSignContent);
         }
 
         if (PopulationDensity.instance.northCustomSignContent != null)
         {
-            setWallSign(x - 1, y + 1, z, BlockFace.WEST, PopulationDensity.instance.northCustomSignContent);
+            setWallSign(world, x - 1, y + 1, z, BlockFace.WEST, PopulationDensity.instance.northCustomSignContent);
         }
 
         if (PopulationDensity.instance.southCustomSignContent != null)
         {
-            setWallSign(x + 1, y + 1, z, BlockFace.EAST, PopulationDensity.instance.southCustomSignContent);
+            setWallSign(world, x + 1, y + 1, z, BlockFace.EAST, PopulationDensity.instance.southCustomSignContent);
         }
 
         if (PopulationDensity.instance.eastCustomSignContent != null)
         {
-            setWallSign(x, y + 1, z - 1, BlockFace.NORTH, PopulationDensity.instance.eastCustomSignContent);
+            setWallSign(world, x, y + 1, z - 1, BlockFace.NORTH, PopulationDensity.instance.eastCustomSignContent);
         }
 
         if (PopulationDensity.instance.westCustomSignContent != null)
         {
-            setWallSign(x, y + 1, z + 1, BlockFace.SOUTH, PopulationDensity.instance.westCustomSignContent);
+            setWallSign(world, x, y + 1, z + 1, BlockFace.SOUTH, PopulationDensity.instance.westCustomSignContent);
         }
     }
 
-    private void setSign(int x, int y, int z, BlockFace blockFace, String[] lines, String... replacements)
+    private void setSign(World world, int x, int y, int z, BlockFace blockFace, String[] lines, String... replacements)
     {
-        Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y, z);
+        Block block = world.getBlockAt(x, y, z);
         block.setType(Material.OAK_SIGN);
 
         org.bukkit.block.data.type.Sign wall = (org.bukkit.block.data.type.Sign)block.getBlockData();
@@ -692,9 +696,9 @@ public class DataStore implements TabCompleter
         s.update();
     }
 
-    private void setWallSign(int x, int y, int z, BlockFace blockFace, String[] lines, String... replacements)
+    private void setWallSign(World world, int x, int y, int z, BlockFace blockFace, String[] lines, String... replacements)
     {
-        Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y, z);
+        Block block = world.getBlockAt(x, y, z);
         block.setType(Material.OAK_WALL_SIGN);
 
         org.bukkit.block.data.type.WallSign wall = (org.bukkit.block.data.type.WallSign)block.getBlockData();
@@ -734,7 +738,7 @@ public class DataStore implements TabCompleter
         HashMap<String, CustomizableMessage> defaults = new HashMap<String, CustomizableMessage>();
 
         //initialize defaults
-        this.addDefault(defaults, Messages.NoManagedWorld, "The PopulationDensity plugin has not been properly configured.  Please update your config.yml to specify a world to manage.", null);
+        this.addDefault(defaults, Messages.WorldNotManaged, "The current world is not listed as a managed world. Please update your config.yml to add it.", null);
         this.addDefault(defaults, Messages.NoBreakPost, "You can't break blocks this close to the region post.", null);
         this.addDefault(defaults, Messages.NoBreakSpawn, "You can't break blocks this close to a player spawn point.", null);
         this.addDefault(defaults, Messages.NoBuildPost, "You can't place blocks this close to the region post.", null);

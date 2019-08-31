@@ -109,7 +109,7 @@ public class BlockEventHandler implements Listener
         Block block = breakEvent.getBlock();
 
         //if the player is not in managed world, do nothing (let vanilla code and other plugins do whatever)
-        if (!player.getWorld().equals(PopulationDensity.ManagedWorld)) return;
+        if (!PopulationDensity.ManagedWorlds.contains(player.getWorld())) return;
 
         //otherwise figure out which region that block is in
         Location blockLocation = block.getLocation();
@@ -151,7 +151,7 @@ public class BlockEventHandler implements Listener
         }
 
         //if not in managed world, do nothing
-        if (!from.getWorld().equals(PopulationDensity.ManagedWorld)) return;
+        if (!PopulationDensity.ManagedWorlds.contains(from.getWorld())) return;
 
         //region posts are at sea level at the lowest, so no need to check build permissions under that
         if (from.getY() < PopulationDensity.instance.minimumRegionPostY) return;
@@ -180,7 +180,7 @@ public class BlockEventHandler implements Listener
         Block block = placeEvent.getBlock();
 
         //if not in managed world, do nothing
-        if (!player.getWorld().equals(PopulationDensity.ManagedWorld)) return;
+        if (!PopulationDensity.ManagedWorlds.contains(player.getWorld())) return;
 
         Location blockLocation = block.getLocation();
 
@@ -246,7 +246,7 @@ public class BlockEventHandler implements Listener
         if (player == null || (!Tag.WALL_SIGNS.isTagged(block.getType()) && !Tag.SIGNS.isTagged(block.getType()))) return;
 
         //if the player is not in managed world, do nothing
-        if (!player.getWorld().equals(PopulationDensity.ManagedWorld)) return;
+        if (!PopulationDensity.ManagedWorlds.contains(player.getWorld())) return;
 
         if (!this.nearRegionPost(block.getLocation(), RegionCoordinates.fromLocation(block.getLocation()), 1)) return;
 
@@ -258,7 +258,7 @@ public class BlockEventHandler implements Listener
     {
         Block pistonBlock = event.getBlock();
 
-        if (!pistonBlock.getWorld().equals(PopulationDensity.ManagedWorld)) return;
+        if (!PopulationDensity.ManagedWorlds.contains(pistonBlock.getWorld())) return;
 
         RegionCoordinates pistonRegion = RegionCoordinates.fromLocation(pistonBlock.getLocation());
         if (this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 12))
@@ -280,7 +280,7 @@ public class BlockEventHandler implements Listener
     {
         Block pistonBlock = event.getBlock();
 
-        if (!pistonBlock.getWorld().equals(PopulationDensity.ManagedWorld)) return;
+        if (!PopulationDensity.ManagedWorlds.contains(pistonBlock.getWorld())) return;
 
         RegionCoordinates pistonRegion = RegionCoordinates.fromLocation(pistonBlock.getLocation());
         if (this.nearRegionPost(pistonBlock.getLocation(), pistonRegion, PopulationDensity.instance.postProtectionRadius + 12))
@@ -312,7 +312,7 @@ public class BlockEventHandler implements Listener
                 location.getBlockX() <= postLocation.getBlockX() + howClose &&
                 location.getBlockZ() >= postLocation.getBlockZ() - howClose &&
                 location.getBlockZ() <= postLocation.getBlockZ() + howClose &&
-                location.getBlockY() >= PopulationDensity.ManagedWorld.getHighestBlockYAt(postLocation) - 4
+                location.getBlockY() >= location.getWorld().getHighestBlockYAt(postLocation) - 4
         );
     }
 }

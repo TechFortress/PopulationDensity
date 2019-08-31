@@ -18,16 +18,19 @@
 
 package me.ryanhamshire.PopulationDensity;
 
+import org.bukkit.World;
+
 import java.util.ArrayList;
 
 public class ScanResultsTask implements Runnable
 {
+    private World world;
     private ArrayList<String> logEntries;
     private boolean openNewRegion;
 
-    public ScanResultsTask(ArrayList<String> logEntries, boolean openNewRegion)
+    public ScanResultsTask(World world, ArrayList<String> logEntries, boolean openNewRegion)
     {
-
+        this.world = world;
         this.logEntries = logEntries;
         this.openNewRegion = openNewRegion;
     }
@@ -42,7 +45,7 @@ public class ScanResultsTask implements Runnable
 
         if (this.openNewRegion)
         {
-            RegionCoordinates newRegion = PopulationDensity.instance.dataStore.addRegion();
+            RegionCoordinates newRegion = PopulationDensity.instance.dataStore.addRegion(world);
             PopulationDensity.instance.scanRegion(newRegion, true);
         }
     }

@@ -91,7 +91,7 @@ public class EntityEventHandler implements Listener
 
         //otherwise if it's close to a region post
         Location regionCenter = PopulationDensity.getRegionCenter(region, false);
-        regionCenter.setY(PopulationDensity.ManagedWorld.getHighestBlockYAt(regionCenter));
+        regionCenter.setY(location.getWorld().getHighestBlockYAt(regionCenter));
         if (regionCenter.distanceSquared(location) < 225)  //225 = 15 * 15
         {
             explodeEvent.blockList().clear(); //All the noise and terror, none of the destruction (whew!).
@@ -135,7 +135,7 @@ public class EntityEventHandler implements Listener
         if (!saplings.contains(item.getType())) return;
 
         //only care about the newest region
-        if (!PopulationDensity.instance.dataStore.getOpenRegion().equals(RegionCoordinates.fromLocation(entity.getLocation())))
+        if (!PopulationDensity.instance.dataStore.getOpenRegion(event.getLocation().getWorld()).equals(RegionCoordinates.fromLocation(entity.getLocation())))
             return;
 
         //only replace these blocks with saplings
@@ -243,7 +243,7 @@ public class EntityEventHandler implements Listener
         //natural spawns may cause animal spawns to keep new player resources available
         if (reason == SpawnReason.NATURAL)
         {
-            if (PopulationDensity.ManagedWorld == null || event.getLocation().getWorld() != PopulationDensity.ManagedWorld)
+            if (!PopulationDensity.ManagedWorlds.contains(event.getLocation().getWorld()))
                 return;
 
             //when an animal naturally spawns, grow grass around it
@@ -256,7 +256,7 @@ public class EntityEventHandler implements Listener
             if (entity instanceof Monster && PopulationDensity.instance.respawnAnimals)
             {
                 //only do this if the spawn is in the newest region
-                if (!PopulationDensity.instance.dataStore.getOpenRegion().equals(RegionCoordinates.fromLocation(entity.getLocation())))
+                if (!PopulationDensity.instance.dataStore.getOpenRegion(entity.getWorld()).equals(RegionCoordinates.fromLocation(entity.getLocation())))
                     return;
 
                 //if it's on grass, there's a 1/100 chance it will also spawn a group of animals

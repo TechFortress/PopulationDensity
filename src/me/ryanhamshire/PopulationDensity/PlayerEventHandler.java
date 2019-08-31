@@ -226,7 +226,6 @@ public class PlayerEventHandler implements Listener
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event)
     {
-
         Player joiningPlayer = event.getPlayer();
 
         PopulationDensity.instance.resetIdleTimer(joiningPlayer);
@@ -246,7 +245,7 @@ public class PlayerEventHandler implements Listener
             if (!joiningPlayer.hasPlayedBefore())
             {
                 // his home region is the open region
-                RegionCoordinates openRegion = this.dataStore.getOpenRegion();
+                RegionCoordinates openRegion = this.dataStore.getOpenRegion(joiningPlayer.getWorld());
                 playerData.homeRegion = openRegion;
                 PopulationDensity.AddLogEntry("Assigned new player "
                         + joiningPlayer.getName() + " to region "
@@ -284,7 +283,7 @@ public class PlayerEventHandler implements Listener
 
                 if (playerData.homeRegion == null)
                 {
-                    playerData.homeRegion = PopulationDensity.instance.dataStore.getOpenRegion();
+                    playerData.homeRegion = PopulationDensity.instance.dataStore.getOpenRegion(joiningPlayer.getWorld());
                 }
             }
 
@@ -349,7 +348,7 @@ public class PlayerEventHandler implements Listener
     {
         if (!PopulationDensity.instance.respawnInHomeRegion)
         {
-            if (PopulationDensity.ManagedWorld == respawnEvent.getRespawnLocation().getWorld())
+            if (PopulationDensity.ManagedWorlds.contains(respawnEvent.getRespawnLocation().getWorld()))
             {
                 PopulationDensity.removeMonstersAround(respawnEvent.getRespawnLocation());
             }
@@ -369,8 +368,7 @@ public class PlayerEventHandler implements Listener
             Location homeRegionCenter = PopulationDensity.getRegionCenter(playerData.homeRegion, false);
 
             // aim for two blocks above the highest block and teleport
-            homeRegionCenter.setY(PopulationDensity.ManagedWorld
-                    .getHighestBlockYAt(homeRegionCenter) + 2);
+            homeRegionCenter.setY(player.getWorld().getHighestBlockYAt(homeRegionCenter) + 2);
             respawnEvent.setRespawnLocation(homeRegionCenter);
 
             PopulationDensity.removeMonstersAround(homeRegionCenter);
