@@ -177,7 +177,7 @@ public class PopulationDensity extends JavaPlugin
 
         //build a list of normal environment worlds
         List<World> worlds = this.getServer().getWorlds();
-        ArrayList<World> normalWorlds = new ArrayList<World>();
+        List<World> normalWorlds = new ArrayList<World>();
         for (int i = 0; i < worlds.size(); i++)
         {
             if (worlds.get(i).getEnvironment() == Environment.NORMAL)
