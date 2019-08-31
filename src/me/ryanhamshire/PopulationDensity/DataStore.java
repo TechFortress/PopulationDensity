@@ -106,7 +106,8 @@ public class DataStore implements TabCompleter
         }
 
         //study region data and initialize both this.openRegionCoordinates and this.nextRegionCoordinates
-        for (World world : PopulationDensity.ManagedWorlds) {
+        for (World world : PopulationDensity.ManagedWorlds)
+        {
             this.findNextRegion(world);
 
             if (nameToCoordsMap.keySet().size() == 0)

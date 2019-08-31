@@ -202,9 +202,11 @@ public class PopulationDensity extends JavaPlugin
 
         this.managedWorldNames = config.getStringList("PopulationDensity.ManagedWorldNames");
         if (this.managedWorldNames.size() == 0) this.managedWorldNames = Collections.singletonList(defaultManagedWorldName);
-        for (String worldName : managedWorldNames) {
+        for (String worldName : managedWorldNames)
+        {
             World world = this.getServer().getWorld(worldName);
-            if (world == null || !normalWorlds.contains(world)) {
+            if (world == null || !normalWorlds.contains(world))
+            {
                 AddLogEntry("World \"" + worldName + "\" does not exist on this server.");
                 continue;
             }
@@ -511,7 +513,8 @@ public class PopulationDensity extends JavaPlugin
         //scan the open region for resources and open a new one as necessary
         //may open and close several regions before finally leaving an "acceptable" region open
         //this will repeat every six hours
-        for (World world : ManagedWorlds) {
+        for (World world : ManagedWorlds)
+        {
             this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScanOpenRegionTask(world), 5L, this.hoursBetweenScans * 60 * 60 * 20L);
         }
 

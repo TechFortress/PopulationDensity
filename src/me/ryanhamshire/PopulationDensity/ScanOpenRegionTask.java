@@ -24,7 +24,8 @@ public class ScanOpenRegionTask implements Runnable
 {
     private World world;
 
-    public ScanOpenRegionTask(World world) {
+    public ScanOpenRegionTask(World world)
+    {
         this.world = world;
     }
 
