@@ -203,7 +203,7 @@ public class DataStore implements TabCompleter
         //initialize random number generator with a seed based the current time
         Random randomGenerator = new Random();
 
-        ArrayList<RegionCoordinates> possibleDestinations = new ArrayList<RegionCoordinates>();
+        List<RegionCoordinates> possibleDestinations = new ArrayList<>();
         for (RegionCoordinates coords : this.coordsToNameMap.keySet())
         {
             if (!coords.equals(regionToAvoid))
