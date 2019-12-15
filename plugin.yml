@@ -80,6 +80,10 @@ commands:
       usage: /SendRegion <player> <region> (if no region specified, player goes home)
       aliases: [sendtoregion]
       permission: populationdensity.sendregion
+   deleteRegion:
+     description: Deletes the specified region without impunity - perform at your own risk
+     usage: /deleteRegion <region>
+     permission: populationdensity.deleteRegion
 permissions:
     populationdensity.*:
         description: Grants all administrative privileges.

@@ -979,6 +979,21 @@ public class PopulationDensity extends JavaPlugin
             this.reportTPS(player);
 
             return true;
+        } else if (cmd.getName().equalsIgnoreCase("deleteRegion"))
+        {
+            if (args.length == 0)
+                return false;
+
+            String name = PopulationDensity.join(args, 1);
+            RegionCoordinates targetRegion = this.dataStore.getRegionCoordinates(name);
+            if (targetRegion == null)
+            {
+                PopulationDensity.sendMessage(player, TextMode.Err, Messages.DestinationNotFound, name);
+                return true;
+            }
+            dataStore.deleteRegion(targetRegion);
+            sender.sendMessage(name + " deleted.");
+            return true;
         }
 
         return false;

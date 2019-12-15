@@ -445,6 +445,23 @@ public class DataStore implements TabCompleter
         this.privateNameRegion(coords, name);
     }
 
+    //"removes" a region
+    public void deleteRegion(RegionCoordinates coords)
+    {
+        //delete any existing data for the region at these coordinates
+        String oldRegionName = this.getRegionName(coords);
+        if (oldRegionName != null)
+        {
+            File oldRegionCoordinatesFile = new File(regionDataFolderPath + File.separator + coords.toString());
+            oldRegionCoordinatesFile.delete();
+
+            File oldRegionNameFile = new File(regionDataFolderPath + File.separator + oldRegionName);
+            oldRegionNameFile.delete();
+            this.coordsToNameMap.remove(coords);
+            this.nameToCoordsMap.remove(oldRegionName.toLowerCase());
+        }
+    }
+
     //retrieves the open region's coordinates
     public RegionCoordinates getOpenRegion()
     {
