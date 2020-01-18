@@ -312,7 +312,7 @@ public class BlockEventHandler implements Listener
                 location.getBlockX() <= postLocation.getBlockX() + howClose &&
                 location.getBlockZ() >= postLocation.getBlockZ() - howClose &&
                 location.getBlockZ() <= postLocation.getBlockZ() + howClose &&
-                location.getBlockY() >= PopulationDensity.ManagedWorld.getHighestBlockYAt(postLocation) - 4
+                location.getBlockY() >= PopulationDensity.ManagedWorld.getHighestBlockYAt(postLocation) - 5
         );
     }
 }
