@@ -26,7 +26,6 @@ import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
@@ -35,6 +34,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.entity.Cat;
 
 //teleports a player.  useful as scheduled task so that a joining player may be teleported (otherwise error)
 class TeleportPlayerTask extends BukkitRunnable
@@ -80,6 +80,14 @@ class TeleportPlayerTask extends BukkitRunnable
                         {
                             Wolf dog = (Wolf)entity;
                             if (dog.isSitting())
+                            {
+                                continue;
+                            }
+                        }
+                        else if (type == EntityType.CAT)
+                        {
+                            Cat cat = (Cat)entity;
+                            if (cat.isSitting())
                             {
                                 continue;
                             }
