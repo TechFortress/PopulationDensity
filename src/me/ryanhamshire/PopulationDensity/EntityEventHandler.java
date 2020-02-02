@@ -266,10 +266,9 @@ public class EntityEventHandler implements Listener
                     this.respawnAnimalCounter = 5;
 
                     //check for other nearby animals
-                    List<Entity> entities = entity.getNearbyEntities(30, 30, 30);
-                    for (int i = 0; i < entities.size(); i++)
+                    for (Entity nearbyEntity : entity.getNearbyEntities(30, 30, 30))
                     {
-                        if (entity instanceof Animals) return;
+                        if (nearbyEntity instanceof Animals) return;
                     }
 
                     EntityType animalType = null;
