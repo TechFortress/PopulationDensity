@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
 
 public class BlockEventHandler implements Listener
 {
@@ -232,6 +233,37 @@ public class BlockEventHandler implements Listener
             else
                 PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoBuildSpawn);
             placeEvent.setCancelled(true);
+            return;
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerBucketEmpty (PlayerBucketEmptyEvent event)
+    {
+        Player player = event.getPlayer();
+
+        PopulationDensity.instance.resetIdleTimer(player);
+
+        //if not in managed world, do nothing
+        if (!player.getWorld().equals(PopulationDensity.ManagedWorld)) return;
+
+        Block block = event.getBlockClicked().getRelative(event.getBlockFace());
+
+        Location blockLocation = block.getLocation();
+
+        //region posts are at sea level at the lowest, so no need to check build permissions under that
+        if (blockLocation.getBlockY() < PopulationDensity.instance.minimumRegionPostY) return;
+
+        RegionCoordinates blockRegion = RegionCoordinates.fromLocation(blockLocation);
+
+        //if too close to (or above) region post, send an error message
+        if (!player.hasPermission("populationdensity.buildbreakanywhere") && this.nearRegionPost(blockLocation, blockRegion, PopulationDensity.instance.postProtectionRadius))
+        {
+            if (PopulationDensity.instance.buildRegionPosts)
+                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoBuildPost);
+            else
+                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoBuildSpawn);
+            event.setCancelled(true);
             return;
         }
     }
