@@ -361,7 +361,7 @@ public class PlayerEventHandler implements Listener
         // if it's NOT a bed respawn, redirect it to the player's home region
         // post
         // this keeps players near where they live, even when they die (haha)
-        if (!respawnEvent.isBedSpawn())
+        if (!respawnEvent.isBedSpawn() && !respawnEvent.isAnchorSpawn())
         {
             PlayerData playerData = this.dataStore.getPlayerData(player);
 

@@ -253,7 +253,7 @@ public class MonitorPerformanceTask implements Runnable
                                 }
                             }
                         }
-                    } else if (type == EntityType.PIG_ZOMBIE && entity.getWorld().getEnvironment() != Environment.NETHER)
+                    } else if (type == EntityType.ZOMBIFIED_PIGLIN && entity.getWorld().getEnvironment() != Environment.NETHER)
                     {
                         entity.remove();
                         totalRemoved++;
