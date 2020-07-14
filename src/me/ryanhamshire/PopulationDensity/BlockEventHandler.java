@@ -208,6 +208,20 @@ public class BlockEventHandler implements Listener
 
         RegionCoordinates blockRegion = RegionCoordinates.fromLocation(blockLocation);
 
+        //region posts are at sea level at the lowest, so no need to check build permissions under that
+        if (blockLocation.getBlockY() < PopulationDensity.instance.minimumRegionPostY) return;
+
+        //if too close to (or above) region post, send an error message
+        if (!player.hasPermission("populationdensity.buildbreakanywhere") && this.nearRegionPost(blockLocation, blockRegion, PopulationDensity.instance.postProtectionRadius))
+        {
+            if (PopulationDensity.instance.buildRegionPosts)
+                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoBuildPost);
+            else
+                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoBuildSpawn);
+            placeEvent.setCancelled(true);
+            return;
+        }
+
         //if bed or chest and player has not been reminded about /movein this play session
         if (type == null) type = block.getType();
         if (beds.contains(type) || type == Material.CHEST)
@@ -222,19 +236,6 @@ public class BlockEventHandler implements Listener
             }
         }
 
-        //region posts are at sea level at the lowest, so no need to check build permissions under that
-        if (blockLocation.getBlockY() < PopulationDensity.instance.minimumRegionPostY) return;
-
-        //if too close to (or above) region post, send an error message
-        if (!player.hasPermission("populationdensity.buildbreakanywhere") && this.nearRegionPost(blockLocation, blockRegion, PopulationDensity.instance.postProtectionRadius))
-        {
-            if (PopulationDensity.instance.buildRegionPosts)
-                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoBuildPost);
-            else
-                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoBuildSpawn);
-            placeEvent.setCancelled(true);
-            return;
-        }
     }
 
     @EventHandler(ignoreCancelled = true)
