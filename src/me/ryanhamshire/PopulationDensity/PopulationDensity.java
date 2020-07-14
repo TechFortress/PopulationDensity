@@ -99,6 +99,7 @@ public class PopulationDensity extends JavaPlugin
     public boolean enableLoginQueue;
     public int reservedSlotsForAdmins;
     public String queueMessage;
+    public boolean automaticallyScanRegions;
     public int hoursBetweenScans;
     public boolean buildRegionPosts;
     public boolean newestRegionRequiresPermission;
@@ -205,6 +206,7 @@ public class PopulationDensity extends JavaPlugin
         this.reservedSlotsForAdmins = config.getInt("PopulationDensity.ReservedSlotsForAdministrators", 1);
         if (this.reservedSlotsForAdmins < 0) this.reservedSlotsForAdmins = 0;
         this.queueMessage = config.getString("PopulationDensity.LoginQueueMessage", "%queuePosition% of %queueLength% in queue.  Reconnect within 3 minutes to keep your place.  :)");
+        this.automaticallyScanRegions = config.getBoolean("PopulationDensity.AutomaticallyScanRegions", true);
         this.hoursBetweenScans = config.getInt("PopulationDensity.HoursBetweenScans", 6);
         this.buildRegionPosts = config.getBoolean("PopulationDensity.BuildRegionPosts", true);
         this.newestRegionRequiresPermission = config.getBoolean("PopulationDensity.NewestRegionRequiresPermission", false);
@@ -394,6 +396,7 @@ public class PopulationDensity extends JavaPlugin
         outConfig.set("PopulationDensity.LoginQueueEnabled", this.enableLoginQueue);
         outConfig.set("PopulationDensity.ReservedSlotsForAdministrators", this.reservedSlotsForAdmins);
         outConfig.set("PopulationDensity.LoginQueueMessage", this.queueMessage);
+        outConfig.set("PopulationDensity.AutomaticallyScanRegions", this.automaticallyScanRegions);
         outConfig.set("PopulationDensity.HoursBetweenScans", this.hoursBetweenScans);
         outConfig.set("PopulationDensity.BuildRegionPosts", this.buildRegionPosts);
         outConfig.set("PopulationDensity.NewestRegionRequiresPermission", this.newestRegionRequiresPermission);
@@ -506,7 +509,10 @@ public class PopulationDensity extends JavaPlugin
         //scan the open region for resources and open a new one as necessary
         //may open and close several regions before finally leaving an "acceptable" region open
         //this will repeat every six hours
-        this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScanOpenRegionTask(), 5L, this.hoursBetweenScans * 60 * 60 * 20L);
+        if (this.automaticallyScanRegions)
+        {
+            this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScanOpenRegionTask(), 5L, this.hoursBetweenScans * 60 * 60 * 20L);
+        }
 
         //start monitoring performance
         this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new MonitorPerformanceTask(), 1200L, 1200L);
