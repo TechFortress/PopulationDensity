@@ -215,7 +215,7 @@ public class PopulationDensity extends JavaPlugin
         this.regrowTrees = config.getBoolean("PopulationDensity.TreesRegrow", true);
         this.config_maximumHoppersPerChunk = config.getInt("PopulationDensity.Maximum Hoppers Per Chunk", 10);
         this.thinAnimalAndMonsterCrowds = config.getBoolean("PopulationDensity.ThinOvercrowdedAnimalsAndMonsters", true);
-        this.thinIronGolemsToo = config.getBoolean("PopulationDensity.ThinOverCrowdedIronGolems", this.thinIronGolemsToo);
+        this.thinIronGolemsToo = config.getBoolean("PopulationDensity.ThinOvercrowdedIronGolems", this.thinIronGolemsToo);
         this.minimumRegionPostY = config.getInt("PopulationDensity.MinimumRegionPostY", 62);
         this.preciseWorldSpawn = config.getBoolean("PopulationDensity.PreciseWorldSpawn", false);
         this.woodMinimum = config.getInt("PopulationDensity.MinimumWoodAvailableToPlaceNewPlayers", 200);
