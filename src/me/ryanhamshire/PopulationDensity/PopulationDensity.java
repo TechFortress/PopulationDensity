@@ -18,6 +18,7 @@
 
 package me.ryanhamshire.PopulationDensity;
 
+import io.papermc.lib.PaperLib;
 import org.apache.commons.lang.WordUtils;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.ChatColor;
@@ -534,7 +535,7 @@ public class PopulationDensity extends JavaPlugin
         }
         try
         {
-            Metrics metrics = new Metrics(this);
+            Metrics metrics = new Metrics(this, 3343);
             metrics.addCustomChart(new Metrics.SimplePie("bukkit_impl", new Callable<String>()
             {
                 @Override
@@ -1383,23 +1384,31 @@ public class PopulationDensity extends JavaPlugin
 
     static void removeMonstersAround(Location location)
     {
-        Chunk centerChunk = location.getChunk();
-        World world = location.getWorld();
-
-        for (int x = centerChunk.getX() - 2; x <= centerChunk.getX() + 2; x++)
+        PaperLib.getChunkAtAsync(location).thenApply(centerChunk ->
         {
-            for (int z = centerChunk.getZ() - 2; z <= centerChunk.getZ() + 2; z++)
+            World world = location.getWorld();
+
+            for (int x = centerChunk.getX() - 2; x <= centerChunk.getX() + 2; x++)
             {
-                Chunk chunk = world.getChunkAt(x, z);
-                for (Entity entity : chunk.getEntities())
+                for (int z = centerChunk.getZ() - 2; z <= centerChunk.getZ() + 2; z++)
                 {
-                    if (entity instanceof Monster && entity.getCustomName() == null && ((Monster)entity).getRemoveWhenFarAway() && !((Monster)entity).isLeashed())
+                    PaperLib.getChunkAtAsync(world, x, z).thenApply(chunk ->
                     {
-                        entity.remove();
-                    }
+                        for (Entity entity : chunk.getEntities())
+                        {
+                            if (entity instanceof Monster && entity.getCustomName() == null && ((Monster)entity).getRemoveWhenFarAway() && !((Monster)entity).isLeashed())
+                            {
+                                entity.remove();
+                            }
+                        }
+                        return null;
+                    });
+
                 }
             }
-        }
+            return null;
+        });
+
     }
 
     private Material processMaterials(String string)
