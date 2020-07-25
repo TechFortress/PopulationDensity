@@ -1366,7 +1366,6 @@ public class PopulationDensity extends JavaPlugin
 
     private OfflinePlayer resolvePlayer(String name)
     {
-        @SuppressWarnings("deprecation")
         Player player = this.getServer().getPlayer(name);
         if (player != null) return player;
 
