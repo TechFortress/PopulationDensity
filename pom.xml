@@ -58,6 +58,7 @@
                     <artifactSet>
                         <includes>
                             <include>org.bstats:bstats-bukkit</include>
+                            <include>io.papermc:paperlib</include>
                         </includes>
                     </artifactSet>
                     <minimizeJar>true</minimizeJar>
