@@ -653,35 +653,35 @@ public class DataStore implements TabCompleter
         {
             if (PopulationDensity.instance.instructionsSignContent != null)
             {
-                setWallSign(x - 1, y + 3, z, BlockFace.WEST, PopulationDensity.instance.instructionsSignContent);
-                setWallSign(x + 1, y + 3, z, BlockFace.EAST, PopulationDensity.instance.instructionsSignContent);
+                setWallSign(x - 1, y + 3, z, BlockFace.WEST, PopulationDensity.instance.instructionsSignContent, "%regionName%", regionName);
+                setWallSign(x + 1, y + 3, z, BlockFace.EAST, PopulationDensity.instance.instructionsSignContent, "%regionName%", regionName);
             }
         }
 
         //custom signs
         if (PopulationDensity.instance.mainCustomSignContent != null)
         {
-            setWallSign(x, y + 3, z - 1, BlockFace.NORTH, PopulationDensity.instance.mainCustomSignContent);
+            setWallSign(x, y + 3, z - 1, BlockFace.NORTH, PopulationDensity.instance.mainCustomSignContent, "%regionName%", regionName);
         }
 
         if (PopulationDensity.instance.northCustomSignContent != null)
         {
-            setWallSign(x - 1, y + 1, z, BlockFace.WEST, PopulationDensity.instance.northCustomSignContent);
+            setWallSign(x - 1, y + 1, z, BlockFace.WEST, PopulationDensity.instance.northCustomSignContent, "%regionName%", regionName);
         }
 
         if (PopulationDensity.instance.southCustomSignContent != null)
         {
-            setWallSign(x + 1, y + 1, z, BlockFace.EAST, PopulationDensity.instance.southCustomSignContent);
+            setWallSign(x + 1, y + 1, z, BlockFace.EAST, PopulationDensity.instance.southCustomSignContent, "%regionName%", regionName);
         }
 
         if (PopulationDensity.instance.eastCustomSignContent != null)
         {
-            setWallSign(x, y + 1, z - 1, BlockFace.NORTH, PopulationDensity.instance.eastCustomSignContent);
+            setWallSign(x, y + 1, z - 1, BlockFace.NORTH, PopulationDensity.instance.eastCustomSignContent, "%regionName%", regionName);
         }
 
         if (PopulationDensity.instance.westCustomSignContent != null)
         {
-            setWallSign(x, y + 1, z + 1, BlockFace.SOUTH, PopulationDensity.instance.westCustomSignContent);
+            setWallSign(x, y + 1, z + 1, BlockFace.SOUTH, PopulationDensity.instance.westCustomSignContent, "%regionName%", regionName);
         }
     }
 
