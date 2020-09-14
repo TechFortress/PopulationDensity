@@ -6,7 +6,7 @@
 
     <groupId>me.ryanhamshire</groupId>
     <artifactId>PopulationDensity</artifactId>
-    <version>5.12</version>
+    <version>5.13</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
