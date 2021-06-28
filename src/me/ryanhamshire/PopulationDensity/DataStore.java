@@ -585,12 +585,6 @@ public class DataStore implements TabCompleter
             highestBlockY--;
         }
 
-        //build post
-        PopulationDensity.ManagedWorld.getBlockAt(x, y + 3, z).setType(PopulationDensity.instance.postMaterialTop);
-        PopulationDensity.ManagedWorld.getBlockAt(x, y + 2, z).setType(PopulationDensity.instance.postMaterialMidTop);
-        PopulationDensity.ManagedWorld.getBlockAt(x, y + 1, z).setType(PopulationDensity.instance.postMaterialMidBottom);
-        PopulationDensity.ManagedWorld.getBlockAt(x, y, z).setType(PopulationDensity.instance.postMaterialBottom);
-
         //build outer platform
         for (int x1 = x - 2; x1 <= x + 2; x1++)
         {
@@ -608,6 +602,12 @@ public class DataStore implements TabCompleter
                 PopulationDensity.ManagedWorld.getBlockAt(x1, y, z1).setType(PopulationDensity.instance.innerPlatformMaterial);
             }
         }
+
+        //build post
+        PopulationDensity.ManagedWorld.getBlockAt(x, y + 3, z).setType(PopulationDensity.instance.postMaterialTop);
+        PopulationDensity.ManagedWorld.getBlockAt(x, y + 2, z).setType(PopulationDensity.instance.postMaterialMidTop);
+        PopulationDensity.ManagedWorld.getBlockAt(x, y + 1, z).setType(PopulationDensity.instance.postMaterialMidBottom);
+        PopulationDensity.ManagedWorld.getBlockAt(x, y, z).setType(PopulationDensity.instance.postMaterialBottom);
 
         String regionName = this.getRegionName(region);
 
