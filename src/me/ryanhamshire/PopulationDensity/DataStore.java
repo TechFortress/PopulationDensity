@@ -685,8 +685,21 @@ public class DataStore implements TabCompleter
         }
     }
 
+    private boolean isEmptyArray(String[] lines)
+    {
+        for (String line : lines)
+        {
+            if (!line.isEmpty())
+                return false;
+        }
+
+        return true;
+    }
+
     private void setSign(int x, int y, int z, BlockFace blockFace, String[] lines, String... replacements)
     {
+        if (isEmptyArray(lines))
+            return;
         Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y, z);
         block.setType(Material.OAK_SIGN);
 
@@ -711,6 +724,8 @@ public class DataStore implements TabCompleter
 
     private void setWallSign(int x, int y, int z, BlockFace blockFace, String[] lines, String... replacements)
     {
+        if (isEmptyArray(lines))
+            return;
         Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y, z);
         block.setType(Material.OAK_WALL_SIGN);
 
