@@ -35,6 +35,7 @@ import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,7 +45,7 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 
 public class BlockEventHandler implements Listener
 {
-    private static Set<Material> alwaysBreakableMaterials = new HashSet<Material>(Arrays.asList(
+    private static Set<Material> alwaysBreakableMaterials = new HashSet(Arrays.asList(
             Material.TALL_GRASS,
             Material.ROSE_BUSH,
             Material.LILAC,
@@ -80,7 +81,7 @@ public class BlockEventHandler implements Listener
             Material.SNOW_BLOCK
     ));
 
-    private static Set<Material> beds = new HashSet<Material>(Arrays.asList(
+    private static Set<Material> beds = new HashSet(Arrays.asList(
             Material.WHITE_BED,
             Material.ORANGE_BED,
             Material.MAGENTA_BED,
@@ -327,6 +328,39 @@ public class BlockEventHandler implements Listener
                     return;
                 }
             }
+        }
+    }
+
+    //when a player edit a placed sign...
+    @EventHandler(ignoreCancelled = true)
+    public void onSignEditEvent(SignChangeEvent editEvent) {
+        Player player = editEvent.getPlayer();
+
+        PopulationDensity.instance.resetIdleTimer(player);
+
+        Block block = editEvent.getBlock();
+
+        //if the player is not in managed world, do nothing (let vanilla code and other plugins do whatever)
+        if (!player.getWorld().equals(PopulationDensity.ManagedWorld)) return;
+
+        //otherwise figure out which region that block is in
+        Location blockLocation = block.getLocation();
+
+        //region posts are at sea level at the lowest, so no need to check build permissions under that
+        if (blockLocation.getBlockY() < PopulationDensity.instance.minimumRegionPostY) return;
+
+        RegionCoordinates blockRegion = RegionCoordinates.fromLocation(blockLocation);
+
+        //if too close to (or above) region post, send an error message
+        //note the ONLY way to edit around a region post is to have special permission
+        if (!player.hasPermission("populationdensity.buildbreakanywhere") && this.nearRegionPost(blockLocation, blockRegion, PopulationDensity.instance.postProtectionRadius))
+        {
+            if (PopulationDensity.instance.buildRegionPosts)
+                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoEditPost);
+            else
+                PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoEditSpawn);
+            editEvent.setCancelled(true);
+            return;
         }
     }
 
