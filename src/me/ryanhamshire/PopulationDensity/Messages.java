@@ -65,7 +65,5 @@ public enum Messages
     RegionAlreadyNamed,
     HopperLimitReached,
     OutsideWorldBorder,
-    NoEditPost,
-    NoEditSpawn,
     Wilderness
 }

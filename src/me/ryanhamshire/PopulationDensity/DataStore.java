@@ -718,6 +718,7 @@ public class DataStore implements TabCompleter
                 line = line.replace(key, value);
             }
             s.setLine(i, color(line));
+            s.setEditable(false);
         }
         s.update();
     }
@@ -744,6 +745,7 @@ public class DataStore implements TabCompleter
                 line = line.replace(key, value);
             }
             s.setLine(i, color(line));
+            s.setEditable(false);
         }
         s.update();
     }
@@ -811,8 +813,6 @@ public class DataStore implements TabCompleter
         this.addDefault(defaults, Messages.RegionAlreadyNamed, "This region already has a name.  To REname, use /RenameRegion.", null);
         this.addDefault(defaults, Messages.HopperLimitReached, "To prevent server lag, hoppers are limited to {0} per chunk.", "0: maximum hoppers per chunk");
         this.addDefault(defaults, Messages.OutsideWorldBorder, "The region you are attempting to teleport to is outside the world border.", null);
-        this.addDefault(defaults, Messages.NoEditPost, "You can't edit signs this close to the region post.", null);
-        this.addDefault(defaults, Messages.NoEditSpawn, "You can't edit signs this close to a player spawn point.", null);
         this.addDefault(defaults, Messages.Wilderness, "Wilderness", null);
 
         //load the config file
