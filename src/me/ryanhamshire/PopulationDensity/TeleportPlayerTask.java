@@ -74,8 +74,7 @@ class TeleportPlayerTask extends BukkitRunnable
                 {
                     entitiesToTeleport.add(entity);
                 }
-            }
-            else if (entity instanceof Animals && !(entity instanceof AbstractHorse))
+            } else if (entity instanceof Animals && !(entity instanceof AbstractHorse))
             {
                 entitiesToTeleport.add(entity);
             }
