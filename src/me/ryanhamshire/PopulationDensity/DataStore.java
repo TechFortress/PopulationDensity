@@ -877,7 +877,7 @@ public class DataStore implements TabCompleter
         defaults.put(id.name(), message);
     }
 
-    public synchronized String getMessage(Messages messageID, String... args)
+    synchronized public String getMessage(Messages messageID, String... args)
     {
         String message = messages[messageID.ordinal()];
 
