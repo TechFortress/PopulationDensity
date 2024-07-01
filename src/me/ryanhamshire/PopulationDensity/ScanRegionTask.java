@@ -27,7 +27,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class ScanRegionTask extends Thread {
+public class ScanRegionTask extends Thread
+{
     private ChunkSnapshot[][] chunks;
     private boolean openNewRegions;
 
@@ -144,12 +145,14 @@ public class ScanRegionTask extends Thread {
         Material.KELP
     ));  
 
-    public ScanRegionTask(ChunkSnapshot[][] chunks, boolean openNewRegions) {
+    public ScanRegionTask(ChunkSnapshot[][] chunks, boolean openNewRegions)
+    {
         this.chunks = chunks;
         this.openNewRegions = openNewRegions;
     }
 
-    private class Position {
+    private class Position
+    {
         public int x;
         public int y;
         public int z;
@@ -160,7 +163,8 @@ public class ScanRegionTask extends Thread {
             this.z = z;
         }
 
-        public String toString() {
+        public String toString()
+        {
             return new StringBuilder()
                 .append(this.x)
                 .append(" ")
@@ -172,7 +176,8 @@ public class ScanRegionTask extends Thread {
     }
 
     @Override
-    public void run() {
+    public void run()
+    {
         ArrayList<String> logEntries = new ArrayList<>();
 
         //initialize report content
@@ -198,10 +203,13 @@ public class ScanRegionTask extends Thread {
 
         //find a reasonable start position
         Position currentPosition = null;
-        for (x = 0; x < examined.length && currentPosition == null; x++) {
-            for (z = 0; z < examined[0][0].length && currentPosition == null; z++) {
+        for (x = 0; x < examined.length && currentPosition == null; x++)
+        {
+            for (z = 0; z < examined[0][0].length && currentPosition == null; z++)
+            {
                 Position position = new Position(x, maxHeight - 1, z);
-                if (this.getMaterialAt(position) == Material.AIR) {
+                if (this.getMaterialAt(position) == Material.AIR)
+                {
                     currentPosition = position;
                 }
             }
@@ -215,10 +223,13 @@ public class ScanRegionTask extends Thread {
         ConcurrentLinkedQueue<Position> unexaminedQueue = new ConcurrentLinkedQueue<>();
 
         //mark start position as examined
-        try {
+        try
+        {
             assert currentPosition != null;
             examined[currentPosition.x][currentPosition.y][currentPosition.z] = true;
-        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        catch (ArrayIndexOutOfBoundsException e)
+        {
             logEntries.add("Unexpected Exception: " + e.toString());
         }
 
@@ -226,7 +237,8 @@ public class ScanRegionTask extends Thread {
         unexaminedQueue.add(currentPosition);
 
         //as long as there are positions in the queue, keep going
-        while (!unexaminedQueue.isEmpty()) {
+        while (!unexaminedQueue.isEmpty())
+        {
             //dequeue a block
             currentPosition = unexaminedQueue.remove();
 
@@ -237,8 +249,10 @@ public class ScanRegionTask extends Thread {
             //in that case, just move on to the next item in the queue
             if (material == null || currentPosition.y < min_y) continue;
 
-            if (!notPlacedByPlayerMaterial.contains(material)) {
-                switch (material) {
+            if (!notPlacedByPlayerMaterial.contains(material))
+            {
+                switch (material)
+                {
                     // Check if it's a pass-through-able block
                     case AIR:
                     case CAVE_AIR: // yes this is a thing now in 1.13 ... don't ask me y...
@@ -285,12 +299,15 @@ public class ScanRegionTask extends Thread {
                         adjacentPositionQueue.add(new Position(currentPosition.x, currentPosition.y - 1, currentPosition.z));
     
                         //for each adjacent block
-                        while (!adjacentPositionQueue.isEmpty()) {
+                        while (!adjacentPositionQueue.isEmpty())
+                        {
                             Position adjacentPosition = adjacentPositionQueue.remove();
     
-                            try {
+                            try
+                            {
                                 //if it hasn't been examined yet
-                                if (!examined[adjacentPosition.x][adjacentPosition.y][adjacentPosition.z]) {
+                                if (!examined[adjacentPosition.x][adjacentPosition.y][adjacentPosition.z])
+                                {
                                     //mark it as examined
                                     examined[adjacentPosition.x][adjacentPosition.y][adjacentPosition.z] = true;
     

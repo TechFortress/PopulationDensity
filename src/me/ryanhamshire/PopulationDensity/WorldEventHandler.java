@@ -200,12 +200,16 @@ public class WorldEventHandler implements Listener
     static void removeAbandonedEntities(Chunk chunk)
     {
         Entity[] entities = chunk.getEntities();
-        for (Entity entity : entities) {
-            if (isAbandoned(entity)) {
-                if (PopulationDensity.instance.markRemovedEntityLocations) {
+        for (Entity entity : entities)
+        {
+            if (isAbandoned(entity))
+            {
+                if (PopulationDensity.instance.markRemovedEntityLocations)
+                {
                     Block block = entity.getLocation().getBlock();
                     Material blockType = block.getType();
-                    if (blockType == Material.SHORT_GRASS || blockType == Material.AIR) {
+                    if (blockType == Material.SHORT_GRASS || blockType == Material.AIR)
+                    {
                         block.setType(Material.FERN);
                     }
                 }

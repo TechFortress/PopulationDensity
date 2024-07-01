@@ -21,7 +21,8 @@ package me.ryanhamshire.PopulationDensity;
 import org.bukkit.ChatColor;
 
 //just a few constants for chat color codes
-class TextMode {
+class TextMode
+{
     static final ChatColor Info = ChatColor.AQUA;
     static final ChatColor Instr = ChatColor.YELLOW;
     static final ChatColor Warn = ChatColor.GOLD;

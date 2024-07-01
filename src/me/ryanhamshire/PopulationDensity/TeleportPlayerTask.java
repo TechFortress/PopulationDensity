@@ -66,40 +66,52 @@ class TeleportPlayerTask extends BukkitRunnable
 
         List<Entity> nearbyEntities = player.getNearbyEntities(5, this.player.getWorld().getMaxHeight(), 5);
 
-        for (Entity entity : nearbyEntities) {
-            if (entity instanceof Tameable && !(entity instanceof AbstractHorse)) {
-                if (isTamerOfEntity(entity, player) && !isSitting(entity)) {
+        for (Entity entity : nearbyEntities)
+        {
+            if (entity instanceof Tameable && !(entity instanceof AbstractHorse))
+            {
+                if (isTamerOfEntity(entity, player) && !isSitting(entity))
+                {
                     entitiesToTeleport.add(entity);
                 }
-            } else if (entity instanceof Animals && !(entity instanceof AbstractHorse)) {
+            }
+            else if (entity instanceof Animals && !(entity instanceof AbstractHorse))
+            {
                 entitiesToTeleport.add(entity);
             }
 
-            if (entity instanceof LivingEntity) {
+            if (entity instanceof LivingEntity)
+            {
                 LivingEntity creature = (LivingEntity) entity;
                 boolean isPlayerRiding = false;
-                for (Entity passenger : creature.getPassengers()) {
-                    if (passenger instanceof Player && player.equals(passenger)) {
+                for (Entity passenger : creature.getPassengers())
+                {
+                    if (passenger instanceof Player && player.equals(passenger))
+                    {
                         isPlayerRiding = true;
                     }
                 }
                 boolean isLeashedByPlayer = creature.isLeashed() && player.equals(creature.getLeashHolder());
-                if (isLeashedByPlayer || isPlayerRiding) {
+                if (isLeashedByPlayer || isPlayerRiding)
+                {
                     entitiesToTeleport.add(creature);
                 }
             }
         }
 
         player.teleport(destination, TeleportCause.PLUGIN);
-        if (this.makeFallDamageImmune) {
+        if (this.makeFallDamageImmune)
+        {
             dropShipTeleporter.makeEntityFallDamageImmune(player);
         }
 
-        // sound effect
+        //sound effect
         player.playSound(destination, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
 
-        if (PopulationDensity.instance.config_teleportAnimals) {
-            for (Entity entity : entitiesToTeleport) {
+        if (PopulationDensity.instance.config_teleportAnimals)
+        {
+            for (Entity entity : entitiesToTeleport)
+            {
                 if (!(entity instanceof LivingEntity)) continue;
                 LivingEntity livingEntity = (LivingEntity)entity;
                 if (this.makeFallDamageImmune)
@@ -110,16 +122,19 @@ class TeleportPlayerTask extends BukkitRunnable
     }
 
     // Check if the player is the owner of the tameable entity
-    private boolean isTamerOfEntity(Entity entity, Player player) {
+    private boolean isTamerOfEntity(Entity entity, Player player)
+    {
         Tameable tameable = (Tameable) entity;
         return tameable.isTamed() && tameable.getOwner() != null &&
             player.getUniqueId().equals(tameable.getOwner().getUniqueId());
     }
 
-    // Check if the entity is not sitting
-    private boolean isSitting(Entity entity) {
+    // Check if the entity is sitting
+    private boolean isSitting(Entity entity)
+    {
         EntityType type = entity.getType();
-        switch (type) {
+        switch (type)
+        {
             case WOLF:
                 return ((Wolf) entity).isSitting();
             case CAT:

@@ -692,7 +692,8 @@ public class DataStore implements TabCompleter
         }
     }
 
-    private boolean isEmptyArray(String[] lines) {
+    private boolean isEmptyArray(String[] lines)
+    {
         return Arrays.stream(lines).allMatch(String::isEmpty);
     }
 
@@ -704,7 +705,8 @@ public class DataStore implements TabCompleter
         Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y, z);
         block.setType(Material.OAK_SIGN);
 
-        if (block.getState() instanceof Sign) {
+        if (block.getState() instanceof Sign)
+        {
             org.bukkit.block.data.type.Sign wall = (org.bukkit.block.data.type.Sign)block.getBlockData();
             wall.setRotation(blockFace);
             block.setBlockData(wall);
@@ -723,7 +725,8 @@ public class DataStore implements TabCompleter
                 s.setWaxed(true);
             }
             s.update();
-        } else {
+        } else
+        {
             PopulationDensity.AddLogEntry("Failed to set sign at " + x + ", " + y + ", " + z + " facing " + blockFace);
         }
     }
@@ -735,7 +738,8 @@ public class DataStore implements TabCompleter
         Block block = PopulationDensity.ManagedWorld.getBlockAt(x, y, z);
         block.setType(Material.OAK_WALL_SIGN);
 
-        if (block.getState().getBlockData() instanceof WallSign) {
+        if (block.getState().getBlockData() instanceof WallSign)
+        {
             WallSign wall =  (WallSign) block.getBlockData();
             wall.setFacing(blockFace);
             block.setBlockData(wall);
@@ -754,7 +758,8 @@ public class DataStore implements TabCompleter
                 s.setWaxed(true);
             }
             s.update();
-        } else {
+        } else
+        {
             PopulationDensity.AddLogEntry("Failed to set wall sign at " + x + ", " + y + ", " + z + " facing " + blockFace);
         }
     }

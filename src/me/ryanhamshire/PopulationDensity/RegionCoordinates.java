@@ -53,7 +53,8 @@ public class RegionCoordinates
 
     //converts a string representing region coordinates to a proper region coordinates object
     //used in reading data from files and converting filenames themselves in some cases
-    public RegionCoordinates(String string) {
+    public RegionCoordinates(String string)
+    {
         //split the input string on the space
         String[] elements = string.split(" ");
 
@@ -64,28 +65,31 @@ public class RegionCoordinates
     }
 
     //opposite of above - converts region coordinates to a handy string
-    public String toString() {
+    public String toString()
+    {
         return new StringBuilder()
-            .append(this.x)
-            .append(" ")
-            .append(this.z)
-            .toString();
+                .append(this.x)
+                .append(" ")
+                .append(this.z)
+                .toString();
     }
 
     //compares two region coordinates to see if they match
     @Override
-    public boolean equals(Object coordinatesToCompare) {
+    public boolean equals(Object coordinatesToCompare)
+    {
         if (coordinatesToCompare == null) return false;
 
         if (!(coordinatesToCompare instanceof RegionCoordinates)) return false;
 
-        RegionCoordinates coords = (RegionCoordinates) coordinatesToCompare;
+        RegionCoordinates coords = (RegionCoordinates)coordinatesToCompare;
 
         return this.x == coords.x && this.z == coords.z;
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return this.toString().hashCode();
     }
 }

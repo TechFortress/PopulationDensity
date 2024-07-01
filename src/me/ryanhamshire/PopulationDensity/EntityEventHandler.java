@@ -163,7 +163,8 @@ public class EntityEventHandler implements Listener
                 block.getRelative(BlockFace.SOUTH_WEST),
                 block.getRelative(BlockFace.NORTH_WEST)};
 
-        for (Block neighbor : neighbors) {
+        for (Block neighbor : neighbors)
+        {
             if (saplings.contains(neighbor.getType()) || logs.contains(neighbor.getType())) return;
         }
 

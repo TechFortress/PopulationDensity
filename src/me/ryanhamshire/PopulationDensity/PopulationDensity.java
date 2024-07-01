@@ -178,8 +178,10 @@ public class PopulationDensity extends JavaPlugin
         //build a list of normal environment worlds
         List<World> worlds = this.getServer().getWorlds();
         ArrayList<World> normalWorlds = new ArrayList<>();
-        for (World world: worlds) {
-            if (world.getEnvironment() == Environment.NORMAL) {
+        for (World world: worlds)
+        {
+            if (world.getEnvironment() == Environment.NORMAL)
+            {
                 normalWorlds.add(world);
             }
         }
@@ -530,11 +532,13 @@ public class PopulationDensity extends JavaPlugin
                 }
             }
         }
-        try {
+        try
+        {
             Metrics metrics = new Metrics(this, 3343);
             metrics.addCustomChart(new Metrics.SimplePie("bukkit_impl", this::getVersionImplementation));
         }
-        catch (Exception ignored) {
+        catch (Exception ignored)
+        {
             PopulationDensity.AddLogEntry("Failed to submit metrics data.");
         }
     }
@@ -808,14 +812,17 @@ public class PopulationDensity extends JavaPlugin
 
             RegionCoordinates randomRegion = this.dataStore.getRandomRegion(RegionCoordinates.fromLocation(player.getLocation()));
 
-            if (randomRegion == null) {
+            if (randomRegion == null)
+            {
                 PopulationDensity.sendMessage(player, TextMode.Err, Messages.NoMoreRegions);
                 return true;
             } 
             
-            if (result.nearPost && this.launchPlayer(player)) {
+            if (result.nearPost && this.launchPlayer(player))
+            {
                 this.teleportPlayer(player, randomRegion, 1);
-            } else {
+            } else
+            {
                 this.teleportPlayer(player, randomRegion, 0);
             }
 
@@ -1008,7 +1015,8 @@ public class PopulationDensity extends JavaPlugin
             return true;
         }
 
-        if (!allowRename && this.dataStore.getRegionName(currentRegion) != null) {
+        if (!allowRename && this.dataStore.getRegionName(currentRegion) != null)
+        {
             PopulationDensity.sendMessage(player, TextMode.Err, Messages.RegionAlreadyNamed);
             return true;
         }

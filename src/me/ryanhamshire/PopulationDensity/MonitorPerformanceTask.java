@@ -309,7 +309,8 @@ public class MonitorPerformanceTask implements Runnable
                         total++;
                     }
 
-                    for (Map.Entry<String, Integer> entry : entityCounter.entrySet()) {
+                    for (Map.Entry<String, Integer> entry : entityCounter.entrySet())
+                    {
                         PopulationDensity.AddLogEntry(";" + world.getName() + ";" + chunk.getX() + ";" + chunk.getZ() + ";" + entry.getKey() + ";" + entry.getValue());
                     }
 
