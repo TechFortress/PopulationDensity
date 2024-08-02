@@ -57,16 +57,11 @@
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <artifactSet>
                         <includes>
-                            <include>org.bstats:bstats-bukkit</include>
                             <include>io.papermc:paperlib</include>
                         </includes>
                     </artifactSet>
                     <minimizeJar>true</minimizeJar>
                     <relocations>
-                        <relocation>
-                            <pattern>org.bstats</pattern>
-                            <shadedPattern>me.ryanhamshire.PopulationDensity</shadedPattern>
-                        </relocation>
                         <relocation>
                             <pattern>io.papermc.lib</pattern>
                             <shadedPattern>me.ryanhamshire.PopulationDensity.paperlib</shadedPattern>
@@ -83,9 +78,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-                <version>4.0.0</version>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>9.0.1</version>
                 <executions>
                     <execution>
                         <id>get-the-git-infos</id>
@@ -103,7 +98,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.14.0</version>
+            <version>3.15.0</version>
         </dependency>
         <!--Spigot API-->
         <dependency>
@@ -117,12 +112,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>19.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bstats</groupId>
-            <artifactId>bstats-bukkit</artifactId>
-            <version>1.7</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.papermc</groupId>
