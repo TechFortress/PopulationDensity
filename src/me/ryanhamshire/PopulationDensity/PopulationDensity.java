@@ -20,6 +20,7 @@ package me.ryanhamshire.PopulationDensity;
 
 import io.papermc.lib.PaperLib;
 import org.apache.commons.lang3.StringUtils;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;

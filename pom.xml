@@ -57,11 +57,16 @@
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <artifactSet>
                         <includes>
+                            <include>org.bstats:bstats-bukkit</include>
                             <include>io.papermc:paperlib</include>
                         </includes>
                     </artifactSet>
                     <minimizeJar>true</minimizeJar>
                     <relocations>
+                        <relocation>
+                            <pattern>org.bstats</pattern>
+                            <shadedPattern>me.ryanhamshire.PopulationDensity</shadedPattern>
+                        </relocation>
                         <relocation>
                             <pattern>io.papermc.lib</pattern>
                             <shadedPattern>me.ryanhamshire.PopulationDensity.paperlib</shadedPattern>
@@ -112,6 +117,12 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>1.7</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.papermc</groupId>
