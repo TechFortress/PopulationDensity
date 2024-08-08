@@ -58,6 +58,7 @@
                     <artifactSet>
                         <includes>
                             <include>org.bstats:bstats-bukkit</include>
+                            <include>org.bstats:bstats-base</include>
                             <include>io.papermc:paperlib</include>
                         </includes>
                     </artifactSet>
@@ -121,7 +122,7 @@
         <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
-            <version>1.7</version>
+            <version>3.0.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
