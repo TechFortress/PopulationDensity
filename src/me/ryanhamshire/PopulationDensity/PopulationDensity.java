@@ -47,11 +47,13 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class PopulationDensity extends JavaPlugin
@@ -101,6 +103,7 @@ public class PopulationDensity extends JavaPlugin
     public int reservedSlotsForAdmins;
     public String queueMessage;
     public boolean automaticallyScanRegions;
+    public boolean advancedScanStrategy;
     public int hoursBetweenScans;
     public boolean buildRegionPosts;
     public boolean newestRegionRequiresPermission;
@@ -208,6 +211,8 @@ public class PopulationDensity extends JavaPlugin
         if (this.reservedSlotsForAdmins < 0) this.reservedSlotsForAdmins = 0;
         this.queueMessage = config.getString("PopulationDensity.LoginQueueMessage", "%queuePosition% of %queueLength% in queue.  Reconnect within 3 minutes to keep your place.  :)");
         this.automaticallyScanRegions = config.getBoolean("PopulationDensity.AutomaticallyScanRegions", true);
+        // advanced scan strategy is disabled by default because it is resource intensive.
+        this.advancedScanStrategy = config.getBoolean("PopulationDensity.AdvancedScanStrategy", false);
         this.hoursBetweenScans = config.getInt("PopulationDensity.HoursBetweenScans", 6);
         this.buildRegionPosts = config.getBoolean("PopulationDensity.BuildRegionPosts", true);
         this.newestRegionRequiresPermission = config.getBoolean("PopulationDensity.NewestRegionRequiresPermission", false);
@@ -398,6 +403,7 @@ public class PopulationDensity extends JavaPlugin
         outConfig.set("PopulationDensity.ReservedSlotsForAdministrators", this.reservedSlotsForAdmins);
         outConfig.set("PopulationDensity.LoginQueueMessage", this.queueMessage);
         outConfig.set("PopulationDensity.AutomaticallyScanRegions", this.automaticallyScanRegions);
+        outConfig.set("PopulationDensity.AdvancedScanStrategy", this.advancedScanStrategy);
         outConfig.set("PopulationDensity.HoursBetweenScans", this.hoursBetweenScans);
         outConfig.set("PopulationDensity.BuildRegionPosts", this.buildRegionPosts);
         outConfig.set("PopulationDensity.NewestRegionRequiresPermission", this.newestRegionRequiresPermission);
@@ -512,6 +518,7 @@ public class PopulationDensity extends JavaPlugin
         //this will repeat every six hours
         if (this.automaticallyScanRegions)
         {
+            // the scan open region task check the scan strategy and calls the appropriate scan method
             this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ScanOpenRegionTask(), 5L, this.hoursBetweenScans * 60 * 60 * 20L);
         }
 
@@ -902,14 +909,21 @@ public class PopulationDensity extends JavaPlugin
             PopulationDensity.sendMessage(player, TextMode.Success, Messages.AddRegionConfirmation);
 
             RegionCoordinates newRegion = this.dataStore.addRegion();
-
+            // the scan open region task check the scan strategy and calls the appropriate scan method
             this.scanRegion(newRegion, true);
 
             return true;
         } else if (cmd.getName().equalsIgnoreCase("scanregion") && player != null)
         {
             PopulationDensity.sendMessage(player, TextMode.Success, Messages.ScanStartConfirmation);
+            // the scan open region task check the scan strategy and calls the appropriate scan method
             this.scanRegion(RegionCoordinates.fromLocation(player.getLocation()), false);
+
+            return true;
+        }  else if (cmd.getName().equalsIgnoreCase("scanregionoriginal") && player != null)
+        {
+            PopulationDensity.sendMessage(player, TextMode.Success, Messages.ScanStartConfirmation);
+            this.scanRegionOriginal(RegionCoordinates.fromLocation(player.getLocation()), false);
 
             return true;
         } else if (cmd.getName().equalsIgnoreCase("loginpriority"))
@@ -1244,10 +1258,128 @@ public class PopulationDensity extends JavaPlugin
 
     //scans the open region for resources and may close the region (and open a new one) if accessible resources are low
     //may repeat itself if the regions it opens are also not acceptably rich in resources
-    //TODO: use Paper API to get chunks async (with fallback to spigot/CB)
-    public void scanRegion(RegionCoordinates region, boolean openNewRegions)
-    {
+    public void scanRegion(RegionCoordinates region, boolean openNewRegions) {
         AddLogEntry("Examining available resources in region \"" + region.toString() + "\"...");
+        int timeoutForCompletion = 30000;
+
+        // Get the center of the region
+        Location regionCenter = getRegionCenter(region, false);
+
+        // Calculate the boundaries of the region
+        int minX = regionCenter.getBlockX() - REGION_SIZE / 2;
+        int maxX = regionCenter.getBlockX() + REGION_SIZE / 2;
+        int minZ = regionCenter.getBlockZ() - REGION_SIZE / 2;
+        int maxZ = regionCenter.getBlockZ() + REGION_SIZE / 2;
+
+        // Asynchronously load the chunks at the region boundaries
+        // Example for region center at world (x, y, z) = (200, y, 200)
+        // lesserBoundaryChunk = (x = 0, z = 0)
+        // greaterBoundaryChunk = (x = 25, z = 25)
+        CompletableFuture<Chunk> lesserBoundaryChunkFuture = PaperLib.getChunkAtAsync(new Location(ManagedWorld, minX, 1, minZ));
+        CompletableFuture<Chunk> greaterBoundaryChunkFuture = PaperLib.getChunkAtAsync(new Location(ManagedWorld, maxX, 1, maxZ));
+
+        // Wait for both boundary chunks to be loaded
+        CompletableFuture<Void> boundaryChunksFuture = CompletableFuture.allOf(lesserBoundaryChunkFuture, greaterBoundaryChunkFuture)
+            .orTimeout(timeoutForCompletion, TimeUnit.MILLISECONDS)
+            .exceptionally(ex -> {
+                AddLogEntry("Failed to load boundary chunks for region \"" + region + "\" . Error: " + ex.getMessage());
+                return null;
+            });
+
+        boundaryChunksFuture.thenAcceptAsync(ignored -> {
+            try {
+                // Retrieve the loaded boundary chunks from the futures
+                Chunk lesserBoundaryChunk = lesserBoundaryChunkFuture.get();
+                Chunk greaterBoundaryChunk = greaterBoundaryChunkFuture.get();
+
+                // Get number of chunks in a region for the 2d chunk array
+                int chunkArrayWidth = greaterBoundaryChunk.getX() - lesserBoundaryChunk.getX() + 1;
+                int chunkArrayHeight = greaterBoundaryChunk.getZ() - lesserBoundaryChunk.getZ() + 1;
+
+                // Create a 2d array to hold the chunk snapshots
+                ChunkSnapshot[][] snapshots = new ChunkSnapshot[chunkArrayWidth][chunkArrayHeight];
+                // Create an array to hold the futures for the snapshots
+                CompletableFuture<?>[] snapshotFutures = new CompletableFuture[chunkArrayWidth * chunkArrayHeight];
+
+                // Iterate over the chunks in the region
+                for (int chunkX = lesserBoundaryChunk.getX(); chunkX <= greaterBoundaryChunk.getX(); chunkX++) {
+                    for (int chunkZ = lesserBoundaryChunk.getZ(); chunkZ <= greaterBoundaryChunk.getZ(); chunkZ++) {
+
+                        // Get the chunk location
+                        // worldX = chunkX * (16 for chunk size) + ( 8 for center of the chunk)
+                        // worldZ = chunkZ * (16 for chunk size) + ( 8 for center of the chunk)
+                        Location chunkLocation = new Location(ManagedWorld, chunkX * 16 + 8, 1, chunkZ * 16 + 8);
+
+                        // Calculate the index of the chunk in the 2d array
+                        // Example for world (x, y, z) = (200, y, 200)
+                        // lesserBoundaryChunk.getX() = 0, greaterBoundaryChunk.getX() = 25
+                        // lesserBoundaryChunk.getZ() = 0, greaterBoundaryChunk.getZ() = 25
+                        // (arrayX, arrayZ) = (0, 0) ... (0, 25) ... (1, 0) ... (25, 25)
+                        final int arrayX = chunkX - lesserBoundaryChunk.getX();
+                        final int arrayZ = chunkZ - lesserBoundaryChunk.getZ();
+
+                        // flat the 2D array of chunks using index = x * height + z
+                        snapshotFutures[arrayX * chunkArrayHeight + arrayZ] = PaperLib.getChunkAtAsync(chunkLocation)
+                                .thenAccept(chunk -> {
+                                    synchronized (snapshots)
+                                    {
+                                        if (snapshots[arrayX][arrayZ] == null)
+                                        {
+                                            ChunkSnapshot snapshot = chunk.getChunkSnapshot();
+                                            if (snapshot != null) {
+                                                snapshots[arrayX][arrayZ] = snapshot;
+                                            } else {
+                                                AddLogEntry("Snapshot is null for chunk at: " + chunk.getX() + ", " + chunk.getZ());
+                                            }
+                                        } else {
+                                            AddLogEntry("Skipped redundant snapshot creation for chunk at: " + chunk.getX() + ", " + chunk.getZ());
+                                        }
+                                    }
+                                })
+                                .exceptionally(ex -> {
+                                    AddLogEntry("Failed to load snapshot for chunk at index: " + (arrayX * chunkArrayHeight + arrayZ) + ". Error:" + ex.getMessage());
+                                    return null;
+                                });
+                    }
+                }
+
+                // When all snapshots are loaded, start the region scan task
+                CompletableFuture.allOf(snapshotFutures)
+                .orTimeout(timeoutForCompletion, TimeUnit.MILLISECONDS)
+                .thenRun(() -> {
+                    AbstractScanRegionTask scanTask;
+                    if (advancedScanStrategy) 
+                    {
+                        AddLogEntry("You are using the advanced scan strategy. Please consider switching to the simplified scan strategy if your server has limited hardware resources.");
+                        scanTask = new ScanRegionTaskAdvanced(snapshots, openNewRegions);
+                    } else 
+                    {
+                        AddLogEntry("You are using the simplified scan strategy. Please consider switching to the advanced scan strategy if your server has sufficient hardware resources.");
+                        scanTask = new ScanRegionTask(snapshots, openNewRegions);
+                    }
+                    scanTask.execute();
+
+                }).exceptionally( ex -> {
+                        AddLogEntry("Failed to load all snapshots for region \"" + region.toString() + "\". Error:" + ex.getMessage());
+                        return null;
+                    }
+                );
+
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    //scans the open region for resources and may close the region (and open a new one) if accessible resources are low
+    //may repeat itself if the regions it opens are also not acceptably rich in resources
+    // deprecated and will be removed in a future version
+    //TODO: use Paper API to get chunks async (with fallback to spigot/CB)
+    public void scanRegionOriginal(RegionCoordinates region, boolean openNewRegions)
+    {
+        AddLogEntry("This method is deprecated and will be removed in a future version. Please use scanRegion which" +
+                " use PopulationDensity.AdvancedScanStrategy to determine the scan strategy.");
+        AddLogEntry("Original: Examining available resources in region \"" + region.toString() + "\"...");
 
         Location regionCenter = getRegionCenter(region, false);
         int min_x = regionCenter.getBlockX() - REGION_SIZE / 2;
@@ -1285,11 +1417,12 @@ public class PopulationDensity extends JavaPlugin
             }
         }
 
-        //create a new task with this information, which will more completely scan the content of all the snapshots
-        ScanRegionTask task = new ScanRegionTask(snapshots, openNewRegions);
+        // create a new task with this information, which will more completely scan the content of all the snapshots
+        ScanRegionTaskAdvanced task = new ScanRegionTaskAdvanced(snapshots, openNewRegions);
+
         task.setPriority(Thread.MIN_PRIORITY);
 
-        //run it in a separate thread
+        // run it in a separate thread
         task.start();
     }
 
