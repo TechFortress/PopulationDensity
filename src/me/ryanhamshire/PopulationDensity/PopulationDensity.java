@@ -211,8 +211,7 @@ public class PopulationDensity extends JavaPlugin
         if (this.reservedSlotsForAdmins < 0) this.reservedSlotsForAdmins = 0;
         this.queueMessage = config.getString("PopulationDensity.LoginQueueMessage", "%queuePosition% of %queueLength% in queue.  Reconnect within 3 minutes to keep your place.  :)");
         this.automaticallyScanRegions = config.getBoolean("PopulationDensity.AutomaticallyScanRegions", true);
-        // advanced scan strategy is disabled by default because it is resource intensive.
-        this.advancedScanStrategy = config.getBoolean("PopulationDensity.AdvancedScanStrategy", false);
+        this.advancedScanStrategy = config.getBoolean("PopulationDensity.AdvancedScanStrategy", true);
         this.hoursBetweenScans = config.getInt("PopulationDensity.HoursBetweenScans", 6);
         this.buildRegionPosts = config.getBoolean("PopulationDensity.BuildRegionPosts", true);
         this.newestRegionRequiresPermission = config.getBoolean("PopulationDensity.NewestRegionRequiresPermission", false);
