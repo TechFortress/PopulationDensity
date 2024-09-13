@@ -22,128 +22,24 @@ import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ScanRegionTask extends Thread
+public class ScanRegionTask extends AbstractScanRegionTask
 {
-    private ChunkSnapshot[][] chunks;
+    private final ChunkSnapshot[][] chunks;
     private boolean openNewRegions;
 
     private static final int CHUNK_SIZE = 16;
 
-    Set<Material> notPlacedByPlayerMaterial = new HashSet<>(Arrays.asList(
-        Material.STONE, 
-        Material.DEEPSLATE,
-        Material.COPPER_ORE,
-        Material.WATER,
-        Material.LAVA,
-        Material.BROWN_MUSHROOM,
-        Material.CACTUS,
-        Material.DEAD_BUSH,
-        Material.DIRT,
-        Material.GRAVEL,
-        Material.SUSPICIOUS_GRAVEL,
-        Material.SHORT_GRASS,
-        Material.FERN,
-        Material.ALLIUM,
-        Material.RED_MUSHROOM_BLOCK,
-        Material.BROWN_MUSHROOM_BLOCK,
-        Material.ICE,
-        Material.OBSIDIAN,
-        Material.RED_MUSHROOM,
-        Material.POPPY,
-        Material.OAK_LEAVES,
-        Material.SPRUCE_LEAVES,
-        Material.BIRCH_LEAVES,
-        Material.JUNGLE_LEAVES,
-        Material.ACACIA_LEAVES,
-        Material.DARK_OAK_LEAVES,
-        Material.CHERRY_LEAVES,
-        Material.MANGROVE_LEAVES,
-        Material.MANGROVE_ROOTS,
-        Material.TALL_GRASS,
-        Material.BLUE_ORCHID,
-        Material.AZURE_BLUET,
-        Material.RED_TULIP,
-        Material.ORANGE_TULIP,
-        Material.PINK_TULIP,
-        Material.WHITE_TULIP,
-        Material.OXEYE_DAISY,
-        Material.SAND,
-        Material.SUSPICIOUS_SAND,
-        Material.SANDSTONE,
-        Material.RED_SANDSTONE,
-        Material.SNOW,
-        Material.VINE,
-        Material.LILY_PAD,
-        Material.DANDELION,
-        Material.MOSSY_COBBLESTONE,
-        Material.CLAY,
-        Material.SUGAR_CANE,
-        Material.PACKED_ICE,
-        Material.BLUE_ICE,
-        Material.ROSE_BUSH,
-        Material.LILAC,
-        Material.LARGE_FERN,
-        Material.GRASS_BLOCK,
-        Material.WHITE_TERRACOTTA,
-        Material.ORANGE_TERRACOTTA,
-        Material.MAGENTA_TERRACOTTA,
-        Material.LIGHT_BLUE_TERRACOTTA,
-        Material.YELLOW_TERRACOTTA,
-        Material.LIME_TERRACOTTA,
-        Material.PINK_TERRACOTTA,
-        Material.GRAY_TERRACOTTA,
-        Material.LIGHT_GRAY_TERRACOTTA,
-        Material.CYAN_TERRACOTTA,
-        Material.PURPLE_TERRACOTTA,
-        Material.BLUE_TERRACOTTA,
-        Material.BROWN_TERRACOTTA,
-        Material.GREEN_TERRACOTTA,
-        Material.RED_TERRACOTTA,
-        Material.BLACK_TERRACOTTA,
-        Material.TERRACOTTA,
-        Material.GRANITE,
-        Material.DIORITE,
-        Material.ANDESITE,
-        Material.COARSE_DIRT,
-        Material.ROOTED_DIRT,
-        Material.MOSS_BLOCK,
-        Material.MOSS_CARPET,
-        Material.MUD,
-        Material.PODZOL,
-        Material.BEDROCK,
-        Material.PEONY,
-        Material.SEAGRASS,
-        Material.TALL_SEAGRASS,
-        Material.SEA_PICKLE,
-        Material.TUBE_CORAL,
-        Material.BRAIN_CORAL,
-        Material.BUBBLE_CORAL,
-        Material.FIRE_CORAL,
-        Material.HORN_CORAL,
-        Material.TUBE_CORAL_BLOCK,
-        Material.BRAIN_CORAL_BLOCK,
-        Material.BUBBLE_CORAL_BLOCK,
-        Material.FIRE_CORAL_BLOCK,
-        Material.HORN_CORAL_BLOCK,
-        Material.TUBE_CORAL_FAN,
-        Material.BRAIN_CORAL_FAN,
-        Material.BUBBLE_CORAL_FAN,
-        Material.FIRE_CORAL_FAN,
-        Material.HORN_CORAL_FAN,
-        Material.BEE_NEST,
-        Material.SCULK,
-        Material.SCULK_CATALYST,
-        Material.SCULK_SENSOR,
-        Material.SCULK_SHRIEKER,
-        Material.SCULK_VEIN,
-        Material.GLOW_LICHEN,
-        Material.KELP
-    ));  
+    private static final String WOOD = "WOOD";
+    private static final String COAL_ORE = "COAL_ORE";
+    private static final String LAPIS_ORE = "LAPIS_ORE";
+    private static final String IRON_ORE = "IRON_ORE";
+    private static final String GOLD_ORE = "GOLD_ORE";
+    private static final String REDSTONE_ORE = "REDSTONE_ORE";
+    private static final String EMERALD_ORE = "EMERALD_ORE";
+    private static final String DIAMOND_ORE = "DIAMOND_ORE";
+    private static final String PLAYER_BLOCK = "PLAYER_BLOCK";
 
     public ScanRegionTask(ChunkSnapshot[][] chunks, boolean openNewRegions)
     {
@@ -151,253 +47,46 @@ public class ScanRegionTask extends Thread
         this.openNewRegions = openNewRegions;
     }
 
-    private class Position
-    {
-        public int x;
-        public int y;
-        public int z;
-
-        public Position(int x, int y, int z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public String toString()
-        {
-            return new StringBuilder()
-                .append(this.x)
-                .append(" ")
-                .append(this.y)
-                .append(" ")
-                .append(this.z)
-                .toString();
-        }
+    @Override
+    public void execute() {
+        this.setPriority(Thread.MIN_PRIORITY);
+        this.start();
     }
 
     @Override
     public void run()
     {
-        ArrayList<String> logEntries = new ArrayList<>();
+        ConcurrentHashMap<String, Integer> blockCounts = new ConcurrentHashMap<>();
 
-        //initialize report content
-        int woodCount = 0;
-        int coalCount = 0;
-        int lapisCount = 0;
-        int ironCount = 0;
-        int goldCount = 0;
-        int redstoneCount = 0;
-        int emeraldCount = 0;
-        int diamondCount = 0;
-        int playerBlocks = 0;
-
-        //initialize a new array to track where we've been
-        int maxHeight = PopulationDensity.ManagedWorld.getMaxHeight();
-        int x, y, z;
-        x = y = z = 0;
-        boolean[][][] examined = new boolean[this.chunks.length * CHUNK_SIZE][maxHeight][this.chunks.length * CHUNK_SIZE];
-        for (x = 0; x < examined.length; x++)
-            for (y = 0; y < examined[0].length; y++)
-                for (z = 0; z < examined[0][0].length; z++)
-                    examined[x][y][z] = false;
-
-        //find a reasonable start position
-        Position currentPosition = null;
-        for (x = 0; x < examined.length && currentPosition == null; x++)
-        {
-            for (z = 0; z < examined[0][0].length && currentPosition == null; z++)
-            {
-                Position position = new Position(x, maxHeight - 1, z);
-                if (this.getMaterialAt(position) == Material.AIR)
-                {
-                    currentPosition = position;
-                }
-            }
-        }
-
-        //set depth boundary
+        //set depth and height boundaries
         //if a player has to brave cavernous depths, those resources aren't "easily attainable"
-        int min_y = PopulationDensity.instance.minimumRegionPostY - 20;
-
-        //instantiate empty queue
-        ConcurrentLinkedQueue<Position> unexaminedQueue = new ConcurrentLinkedQueue<>();
-
-        //mark start position as examined
-        try
-        {
-            assert currentPosition != null;
-            examined[currentPosition.x][currentPosition.y][currentPosition.z] = true;
-        }
-        catch (ArrayIndexOutOfBoundsException e)
-        {
-            logEntries.add("Unexpected Exception: " + e.toString());
-        }
-
-        //enqueue that start position
-        unexaminedQueue.add(currentPosition);
-
-        //as long as there are positions in the queue, keep going
-        while (!unexaminedQueue.isEmpty())
-        {
-            //dequeue a block
-            currentPosition = unexaminedQueue.remove();
-
-            //get material
-            Material material = this.getMaterialAt(currentPosition);
-
-            //material == null indicates the data is out of bounds (not in the snapshots)
-            //in that case, just move on to the next item in the queue
-            if (material == null || currentPosition.y < min_y) continue;
-
-            if (!notPlacedByPlayerMaterial.contains(material))
-            {
-                switch (material)
-                {
-                    // Check if it's a pass-through-able block
-                    case AIR:
-                    case CAVE_AIR: // yes this is a thing now in 1.13 ... don't ask me y...
-                    case BUBBLE_COLUMN:
-                    case OAK_DOOR:
-                    case SPRUCE_DOOR:
-                    case BIRCH_DOOR:
-                    case JUNGLE_DOOR:
-                    case ACACIA_DOOR:
-                    case DARK_OAK_DOOR:
-                    case CHERRY_DOOR:
-                    case MANGROVE_DOOR:
-                    case OAK_TRAPDOOR:
-                    case SPRUCE_TRAPDOOR:
-                    case BIRCH_TRAPDOOR:
-                    case JUNGLE_TRAPDOOR:
-                    case ACACIA_TRAPDOOR:
-                    case DARK_OAK_TRAPDOOR:
-                    case CHERRY_TRAPDOOR:
-                    case MANGROVE_TRAPDOOR:
-                    case IRON_DOOR:
-                    case IRON_TRAPDOOR:
-                    case LADDER:
-                    {
-                        //make a list of adjacent blocks
-                        ConcurrentLinkedQueue<Position> adjacentPositionQueue = new ConcurrentLinkedQueue<>();
-    
-                        //x + 1
-                        adjacentPositionQueue.add(new Position(currentPosition.x + 1, currentPosition.y, currentPosition.z));
-    
-                        //x - 1
-                        adjacentPositionQueue.add(new Position(currentPosition.x - 1, currentPosition.y, currentPosition.z));
-    
-                        //z + 1
-                        adjacentPositionQueue.add(new Position(currentPosition.x, currentPosition.y, currentPosition.z + 1));
-    
-                        //z - 1
-                        adjacentPositionQueue.add(new Position(currentPosition.x, currentPosition.y, currentPosition.z - 1));
-    
-                        //y + 1
-                        adjacentPositionQueue.add(new Position(currentPosition.x, currentPosition.y + 1, currentPosition.z));
-    
-                        //y - 1
-                        adjacentPositionQueue.add(new Position(currentPosition.x, currentPosition.y - 1, currentPosition.z));
-    
-                        //for each adjacent block
-                        while (!adjacentPositionQueue.isEmpty())
-                        {
-                            Position adjacentPosition = adjacentPositionQueue.remove();
-    
-                            try
-                            {
-                                //if it hasn't been examined yet
-                                if (!examined[adjacentPosition.x][adjacentPosition.y][adjacentPosition.z])
-                                {
-                                    //mark it as examined
-                                    examined[adjacentPosition.x][adjacentPosition.y][adjacentPosition.z] = true;
-    
-                                    //shove it in the queue for processing
-                                    unexaminedQueue.add(adjacentPosition);
-                                }
-                            }
-    
-                            //ignore any adjacent blocks which are outside the snapshots
-                            catch (ArrayIndexOutOfBoundsException e) {}
-                        }
-                        break;
-                    }
-    
-                    // Check if it's a log
-                    case OAK_LOG:
-                    case SPRUCE_LOG:
-                    case BIRCH_LOG:
-                    case JUNGLE_LOG:
-                    case ACACIA_LOG:
-                    case DARK_OAK_LOG:
-                    case CHERRY_LOG:
-                    case MANGROVE_LOG:
-                    {
-                        woodCount++;
-                        break;
-                    }
-    
-                    // Check if it's an ore
-                    case COAL_ORE:
-                    case DEEPSLATE_COAL_ORE:
-                    {
-                        coalCount++;
-                        break;
-                    }
-                    case IRON_ORE:
-                    case DEEPSLATE_IRON_ORE:
-                    {
-                        ironCount++;
-                        break;
-                    }
-                    case GOLD_ORE:
-                    case DEEPSLATE_GOLD_ORE:
-                    {
-                        goldCount++;
-                        break;
-                    }
-                    case REDSTONE_ORE:
-                    case DEEPSLATE_REDSTONE_ORE:
-                    {
-                        redstoneCount++;
-                        break;
-                    }
-                    case LAPIS_ORE:
-                    case DEEPSLATE_LAPIS_ORE:
-                    {
-                        lapisCount++;
-                        break;
-                    }
-                    case EMERALD_ORE:
-                    case DEEPSLATE_EMERALD_ORE:
-                    {
-                        emeraldCount++;
-                        break;
-                    }
-                    case DIAMOND_ORE:
-                    case DEEPSLATE_DIAMOND_ORE:
-                    {
-                        diamondCount++;
-                        break;
-                    }
-                    // Last but not least: if it's a player block
-                    default:
-                    {
-                        playerBlocks++;
-                        break;
-                    }
+        int maxHeight = PopulationDensity.ManagedWorld.getMaxHeight();
+        int minY = PopulationDensity.instance.minimumRegionPostY - 20;
+        for (ChunkSnapshot[] chunk : chunks) {
+            for (int z = 0; z < chunks[0].length; z++) {
+                if (chunk[z] != null) {
+                    countBlocksInSnapshotAndFillMap(chunk[z], blockCounts, minY, maxHeight);
                 }
             }
         }
 
-        //compute a resource score
-        int resourceScore = coalCount * 2 + ironCount * 3 + goldCount * 3 + redstoneCount * 3 + emeraldCount * 3 + diamondCount * 4;
+        // initialize report content
+        int woodCount = blockCounts.getOrDefault(WOOD, 0);
+        int coalCount = blockCounts.getOrDefault(COAL_ORE, 0);
+        int lapisCount = blockCounts.getOrDefault(LAPIS_ORE, 0);
+        int ironCount = blockCounts.getOrDefault(IRON_ORE, 0);
+        int goldCount = blockCounts.getOrDefault(GOLD_ORE, 0);
+        int redstoneCount = blockCounts.getOrDefault(REDSTONE_ORE, 0);
+        int emeraldCount = blockCounts.getOrDefault(EMERALD_ORE, 0);
+        int diamondCount = blockCounts.getOrDefault(DIAMOND_ORE, 0);
+        int playerBlocks = blockCounts.getOrDefault(PLAYER_BLOCK, 0);
 
-        //due to a race condition, bukkit might say a chunk is loaded when it really isn't.
-        //in that case, bukkit will incorrectly report that all of the blocks in the chunk are air
-        //strategy: if resource score and wood count are flat zero, the result is suspicious, so wait 5 seconds for chunks to load and start over
-        //to avoid an infinite loop in a resource-bare region, maximum ONE repetition
+        // compute a resource score
+        int resourceScore = Math.min(coalCount, 200) * 2 + ironCount * 3 + goldCount * 3
+                + Math.min(redstoneCount, 50) + emeraldCount * 3 + diamondCount * 4;
 
         //deliver report
+        ArrayList<String> logEntries = new ArrayList<>();
         logEntries.add(" ");
         logEntries.add("Region Scan Results:");
         logEntries.add(" ");
@@ -438,20 +127,155 @@ public class ScanRegionTask extends Thread
         PopulationDensity.instance.getServer().getScheduler().scheduleSyncDelayedTask(PopulationDensity.instance, resultsTask, 5L);
     }
 
-    private Material getMaterialAt(Position position)
+    private void countBlocksInSnapshotAndFillMap(ChunkSnapshot chunkSnapshot, ConcurrentHashMap<String, Integer> blockCounts,
+                                                 int minY, int maxHeight)
     {
-        Material material = null;
+        int woodCount =0;
+        int coalCount = 0;
+        int lapisCount = 0;
+        int ironCount = 0;
+        int goldCount = 0;
+        int redstoneCount = 0;
+        int emeraldCount = 0;
+        int diamondCount = 0;
+        int playerBlocks = 0;
 
-        int chunkx = position.x / 16;
-        int chunkz = position.z / 16;
-
-        try
+        for (int x = 0; x < CHUNK_SIZE; x++)
         {
-            ChunkSnapshot snapshot = this.chunks[chunkx][chunkz];
-            material = snapshot.getBlockType(position.x % 16, position.y, position.z % 16);
-        }
-        catch (IndexOutOfBoundsException e) { }
+            for (int y = minY; y < maxHeight; y++)
+            {
+                for (int z = 0; z < CHUNK_SIZE; z++)
+                {
+                    String blockType = chunkSnapshot.getBlockType(x, y, z).name();
 
-        return material;
+                    // most of the blocks are air or water, so we can skip them
+                    if (blockType.equals("AIR") || blockType.equals("WATER") || blockType.equals("CAVE_AIR")) continue;
+
+                    Material material = Material.valueOf(blockType);
+
+                    if (!Not_Placed_By_Player_Material.contains(material))
+                    {
+                        // count only blocks which have an air/cave-air block near them
+                        // this means they have high chance of being visible and accessible to the players
+                        if (!isUncoveredBlock(chunkSnapshot, x, y, z, minY, maxHeight)) continue;
+
+                        switch (material)
+                        {
+                            case OAK_LOG:
+                            case SPRUCE_LOG:
+                            case BIRCH_LOG:
+                            case JUNGLE_LOG:
+                            case ACACIA_LOG:
+                            case DARK_OAK_LOG:
+                            case CHERRY_LOG:
+                            case MANGROVE_LOG:
+                            {
+                                woodCount++;
+                                break;
+                            }
+                            case COAL_ORE:
+                            case DEEPSLATE_COAL_ORE:
+                            {
+                                coalCount++;
+                                break;
+                            }
+                            case IRON_ORE:
+                            case DEEPSLATE_IRON_ORE:
+                            {
+                                ironCount++;
+                                break;
+                            }
+                            case GOLD_ORE:
+                            case DEEPSLATE_GOLD_ORE:
+                            {
+                                goldCount++;
+                                break;
+                            }
+                            case REDSTONE_ORE:
+                            case DEEPSLATE_REDSTONE_ORE:
+                            {
+                                redstoneCount++;
+                                break;
+                            }
+                            case LAPIS_ORE:
+                            case DEEPSLATE_LAPIS_ORE:
+                            {
+                                lapisCount++;
+                                break;
+                            }
+                            case EMERALD_ORE:
+                            case DEEPSLATE_EMERALD_ORE:
+                            {
+                                emeraldCount++;
+                                break;
+                            }
+                            case DIAMOND_ORE:
+                            case DEEPSLATE_DIAMOND_ORE:
+                            {
+                                diamondCount++;
+                                break;
+                            }
+                            // Last but not least: if it's a player block
+                            default:
+                            {
+                                playerBlocks++;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        blockCounts.put(
+                WOOD,
+                blockCounts.getOrDefault(WOOD, 0) + woodCount);
+
+        blockCounts.put(
+                COAL_ORE,
+                blockCounts.getOrDefault(COAL_ORE, 0) + coalCount);
+
+        blockCounts.put(
+                LAPIS_ORE,
+                blockCounts.getOrDefault(LAPIS_ORE, 0) + lapisCount);
+
+        blockCounts.put(
+                IRON_ORE,
+                blockCounts.getOrDefault(IRON_ORE, 0) + ironCount);
+
+        blockCounts.put(
+                GOLD_ORE,
+                blockCounts.getOrDefault(GOLD_ORE, 0) + goldCount);
+
+        blockCounts.put(
+                REDSTONE_ORE,
+                blockCounts.getOrDefault(REDSTONE_ORE, 0) + redstoneCount);
+
+        blockCounts.put(
+                EMERALD_ORE,
+                blockCounts.getOrDefault(EMERALD_ORE, 0) + emeraldCount);
+
+        blockCounts.put(
+                DIAMOND_ORE,
+                blockCounts.getOrDefault(DIAMOND_ORE, 0) + diamondCount);
+
+        blockCounts.put(
+                PLAYER_BLOCK,
+                blockCounts.getOrDefault(PLAYER_BLOCK, 0) + playerBlocks);
+    }
+
+    private boolean isUncoveredBlock(ChunkSnapshot snapshot, int x, int y, int z, int minY, int maxHeight)
+    {
+        return (x > 0 && isAir(snapshot.getBlockType(x - 1, y, z)))
+                || (x < 15 && isAir(snapshot.getBlockType(x + 1, y, z)))
+                || (y > minY && isAir(snapshot.getBlockType(x, y - 1, z)))
+                || (y < maxHeight - 1 && isAir(snapshot.getBlockType(x, y + 1, z)))
+                || (z > 0 && isAir(snapshot.getBlockType(x, y, z - 1)))
+                || (z < 15 && isAir(snapshot.getBlockType(x, y, z + 1)));
+    }
+
+    private boolean isAir(Material material)
+    {
+        return material == Material.AIR || material == Material.CAVE_AIR;
     }
 }

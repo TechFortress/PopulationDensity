@@ -43,8 +43,12 @@ commands:
       usage: /randomregion
       permission: populationdensity.randomregion
    scanregion:
-      description: Scans the region you're standing in for resources.
+      description: Scans the region you're standing in for resources. the advancedScanStrategy setting in the config file determines the scan strategy.
       usage: /ScanRegion
+      permission: populationdensity.addregion
+   scanregionoriginal:
+      description: Scans the region you're standing in for resources. the original version. depercated.
+      usage: /ScanRegionOriginal
       permission: populationdensity.addregion
    addregionpost:
       description: Generates a region post at the center of the current region.
