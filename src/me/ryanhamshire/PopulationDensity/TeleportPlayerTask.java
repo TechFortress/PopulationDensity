@@ -68,6 +68,10 @@ class TeleportPlayerTask extends BukkitRunnable
 
         for (Entity entity : nearbyEntities)
         {
+            if (PopulationDensity.instance.config_teleportVillagers && entity.getType() == EntityType.VILLAGER)
+            {
+                entitiesToTeleport.add(entity);
+            } 
             if (entity instanceof Tameable && !(entity instanceof AbstractHorse))
             {
                 if (isTamerOfEntity(entity, player) && !isSitting(entity))
@@ -79,9 +83,8 @@ class TeleportPlayerTask extends BukkitRunnable
                 entitiesToTeleport.add(entity);
             }
 
-            if (entity instanceof LivingEntity)
+            if (entity instanceof LivingEntity creature)
             {
-                LivingEntity creature = (LivingEntity) entity;
                 boolean isPlayerRiding = false;
                 for (Entity passenger : creature.getPassengers())
                 {
