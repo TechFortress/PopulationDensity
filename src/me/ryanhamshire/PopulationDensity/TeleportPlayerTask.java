@@ -68,7 +68,6 @@ class TeleportPlayerTask extends BukkitRunnable
 
         for (Entity entity : nearbyEntities)
         {
-            // check if villager config is enabled and if entity is a villager then add it
             if (PopulationDensity.instance.config_teleportVillagers && entity.getType() == EntityType.VILLAGER)
             {
                 entitiesToTeleport.add(entity);
