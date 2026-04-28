@@ -19,6 +19,7 @@
 package me.ryanhamshire.PopulationDensity;
 
 import org.bukkit.entity.AbstractHorse;
+import org.bukkit.entity.Boat;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -29,7 +30,6 @@ import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,11 +37,6 @@ class TeleportPlayerUtils
 {
     // Private constructor to prevent instantiation
     private TeleportPlayerUtils() {}
-
-    private static final EnumSet<EntityType> BOAT_TYPES = EnumSet.of(
-            EntityType.BOAT,
-            EntityType.CHEST_BOAT
-    );
 
     /**
      * Detect entities that should be teleported with the player based on these rules:
@@ -112,8 +107,7 @@ class TeleportPlayerUtils
 
     // Check if an entity is currently in a boat
     private static boolean isEntityInBoat(Entity entity) {
-        Entity vehicle = entity.getVehicle();
-        return vehicle != null && BOAT_TYPES.contains(vehicle.getType());
+        return entity.getVehicle() instanceof Boat;
     }
 
     // Check if the player is the owner of the tameable entity
