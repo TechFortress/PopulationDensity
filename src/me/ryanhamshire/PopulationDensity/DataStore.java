@@ -501,13 +501,12 @@ public class DataStore implements TabCompleter
         PopulationDensity.GuaranteeChunkLoaded(x, z);
 
         //sink lower until we find something solid
-        //also ignore glowstone, in case there's already a post here!
         Material blockType;
 
         //find the highest block.  could be the surface, a tree, some grass...
         y = PopulationDensity.ManagedWorld.getHighestBlockYAt(x, z) + 1;
 
-        //posts fall through trees, snow, and any existing post looking for the ground
+        //posts fall through trees, snow, and signs looking for the ground (an existing post is detected afterwards)
         do
         {
             blockType = PopulationDensity.ManagedWorld.getBlockAt(x, --y, z).getType();
@@ -532,20 +531,17 @@ public class DataStore implements TabCompleter
                 blockType == Material.CHERRY_LOG ||
                 blockType == Material.MANGROVE_LOG ||
                 blockType == Material.SNOW ||
-                blockType == Material.VINE
+                blockType == Material.VINE ||
+                Tag.SIGNS.isTagged(blockType)
         ));
 
-        if (Tag.SIGNS.isTagged(blockType))
-        {
-            y -= 4;
-        }
-        // Changed check because of the refactor to the postdesign.
-        else if (blockType == PopulationDensity.instance.postMaterialMidTop)
-        {
-            y -= 2;
-        } else if (blockType == Material.BEDROCK)
+        if (blockType == Material.BEDROCK)
         {
             y += 1;
+        }
+        else
+        {
+            y = this.findExistingPostBase(x, y, z);
         }
 
         //if y value is under sea level, correct it to sea level (no posts should be that difficult to find)
@@ -692,6 +688,38 @@ public class DataStore implements TabCompleter
         {
             setWallSign(x, y + 1, z + 1, BlockFace.SOUTH, PopulationDensity.instance.westCustomSignContent, "%regionName%", regionName);
         }
+    }
+
+    //if (x, topY, z) is the top of an existing (possibly damaged) post column, returns that post's base y; otherwise topY.
+    //checked directly because since 26.3 the heightmap no longer counts the top sign.
+    private int findExistingPostBase(int x, int topY, int z)
+    {
+        //the top sign marks a post whatever materials it was built with (PostDesign may have changed since)
+        if (Tag.STANDING_SIGNS.isTagged(PopulationDensity.ManagedWorld.getBlockAt(x, topY + 1, z).getType()))
+        {
+            return topY - 3;
+        }
+
+        //no top sign (disabled or broken): fall back to matching the configured post materials
+        Material[] layers = {
+                PopulationDensity.instance.postMaterialBottom,
+                PopulationDensity.instance.postMaterialMidBottom,
+                PopulationDensity.instance.postMaterialMidTop,
+                PopulationDensity.instance.postMaterialTop
+        };
+
+        for (int height = layers.length - 1; height > 0; height--)
+        {
+            int base = topY - height;
+            boolean matches = true;
+            for (int i = 0; i <= height && matches; i++)
+            {
+                matches = PopulationDensity.ManagedWorld.getBlockAt(x, base + i, z).getType() == layers[i];
+            }
+            if (matches) return base;
+        }
+
+        return topY;
     }
 
     private boolean isEmptyArray(String[] lines)
