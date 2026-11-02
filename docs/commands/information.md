@@ -16,6 +16,18 @@ Display the name of the region you are currently standing in, and the XYZ coordi
 
 ---
 
+## `/myregion`
+
+Display your assigned (home) region by default, including its name and the X and Z coordinates of its region post. Specify a region name to locate another named region, for example `/whereregion Forest`.
+
+| Field | Value |
+|---|---|
+| **Usage** | `/myregion [region name]` |
+| **Aliases** | `whereregion`, `assignedregion` |
+| **Permission** | None for `/myregion`; `populationdensity.regionlookup` (default: **true** — all players) when a region name is given |
+
+---
+
 ## `/listregions`
 
 List all currently named regions on the server.

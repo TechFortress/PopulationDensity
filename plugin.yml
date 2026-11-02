@@ -27,6 +27,10 @@ commands:
    whichregion:
       description: Tells the player which region he's in, and the coordinates of the region post.
       usage: /WhichRegion
+   myregion:
+      description: Tells the player their assigned region, or a named region, and its post coordinates.
+      usage: /MyRegion [region name]
+      aliases: [whereregion, assignedregion]
    newestregion:
       description: Teleports the player to the newest region.
       usage: /newestregion
@@ -105,6 +109,7 @@ permissions:
             populationdensity.unlimitedhoppers: true
             populationdensity.randomregion: true
             populationdensity.lag: true
+            populationdensity.regionlookup: true
     populationdensity.newestregion:
         description: Grants permission to use /NewestRegion.
         default: op
@@ -149,6 +154,9 @@ permissions:
         default: op
     populationdensity.listregions:
         description: Grants access to /ListRegions.
+        default: true
+    populationdensity.regionlookup:
+        description: Grants permission to use /MyRegion <region name> to look up other regions' post coordinates. Plain /MyRegion is always allowed.
         default: true
     populationdensity.unlimitedhoppers:
         description: Players with this permission node ignore the hoppers-per-chunk limit defined in the config file.

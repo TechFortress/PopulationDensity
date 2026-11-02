@@ -484,6 +484,8 @@ public class PopulationDensity extends JavaPlugin
         //set up region name tab completers
         PluginCommand visitCommand = this.getCommand("visit");
         visitCommand.setTabCompleter(this.dataStore);
+        PluginCommand myRegionCommand = this.getCommand("myregion");
+        myRegionCommand.setTabCompleter(this.dataStore);
 
         //player events, to control spawn, respawn, disconnect, and region-based notifications as players walk around
         PlayerEventHandler playerEventHandler = new PlayerEventHandler(this.dataStore, this);
@@ -753,9 +755,66 @@ public class PopulationDensity extends JavaPlugin
                 PopulationDensity.sendMessage(player, TextMode.Info, Messages.WhichRegion, capitalize(regionName));
             }
             Location postLocation = getRegionCenter(currentRegion, true);
-            player.sendMessage(ChatColor.AQUA + "The region post can be found at (X: " 
+            player.sendMessage(ChatColor.AQUA + "The region post can be found at (X: "
                 + Math.round(postLocation.getX()) + ", Y: " + Math.round(postLocation.getY())
-                + ", Z: " + Math.round(postLocation.getZ()) + ")" + ".");
+                + ", Z: " + Math.round(postLocation.getZ()) + ").");
+
+            return true;
+        } else if (cmd.getName().equalsIgnoreCase("myregion") && player != null)
+        {
+            RegionCoordinates targetRegion;
+            String regionName;
+
+            if (args.length > 0)
+            {
+                //looking up other regions reveals their post coordinates, so servers may restrict it
+                if (!player.hasPermission("populationdensity.regionlookup"))
+                {
+                    PopulationDensity.sendMessage(player, TextMode.Err, Messages.NeedRegionLookupPermission);
+                    return true;
+                }
+
+                String requestedName = String.join(" ", args);
+                targetRegion = this.dataStore.getRegionCoordinates(requestedName);
+                if (targetRegion == null)
+                {
+                    PopulationDensity.sendMessage(player, TextMode.Err, Messages.DestinationNotFound, requestedName);
+                    return true;
+                }
+                regionName = this.dataStore.getRegionName(targetRegion);
+            }
+            else
+            {
+                targetRegion = playerData.homeRegion;
+                if (targetRegion == null)
+                {
+                    PopulationDensity.sendMessage(player, TextMode.Warn, Messages.NoAssignedRegion);
+                    return true;
+                }
+                regionName = this.dataStore.getRegionName(targetRegion);
+            }
+
+            if (args.length == 0)
+            {
+                if (regionName == null)
+                {
+                    PopulationDensity.sendMessage(player, TextMode.Info, Messages.AssignedUnnamedRegion);
+                }
+                else
+                {
+                    PopulationDensity.sendMessage(player, TextMode.Info, Messages.AssignedRegion, capitalize(regionName));
+                }
+            }
+            else
+            {
+                PopulationDensity.sendMessage(player, TextMode.Info, Messages.WhichRegion, capitalize(regionName));
+            }
+
+            //X and Z only, so the target region's chunk doesn't need to be loaded to find the post's height
+            Location postLocation = getRegionCenter(targetRegion, false);
+            String locationOwner = args.length == 0 ? "Your" : "The " + capitalize(regionName);
+            player.sendMessage(ChatColor.AQUA + locationOwner + " region post can be found at (X: "
+                + postLocation.getBlockX() + ", Z: " + postLocation.getBlockZ() + ").");
 
             return true;
         } else if (cmd.getName().equalsIgnoreCase("listregions"))
@@ -1444,6 +1503,38 @@ public class PopulationDensity extends JavaPlugin
                 throw new ChunkLoadException();
             }
         }
+    }
+
+    /**
+     * Returns a player's assigned region, or null if they do not have one.
+     */
+    public RegionCoordinates getAssignedRegion(OfflinePlayer player)
+    {
+        if (player == null || this.dataStore == null) return null;
+        return this.dataStore.getPlayerData(player).homeRegion;
+    }
+
+    /**
+     * Returns the region-post location for a player's assigned region, or null if they do not have one.
+     * Only X and Z are meaningful; Y is the configured minimum region post Y, not the top of the post.
+     */
+    public Location getAssignedRegionPostLocation(OfflinePlayer player)
+    {
+        RegionCoordinates assignedRegion = this.getAssignedRegion(player);
+        if (assignedRegion == null) return null;
+        return getRegionCenter(assignedRegion, false);
+    }
+
+    /**
+     * Returns the region-post location for a named region, or null if the name is unknown.
+     * Only X and Z are meaningful; Y is the configured minimum region post Y, not the top of the post.
+     */
+    public Location getRegionPostLocation(String regionName)
+    {
+        if (regionName == null || this.dataStore == null) return null;
+        RegionCoordinates region = this.dataStore.getRegionCoordinates(regionName);
+        if (region == null) return null;
+        return getRegionCenter(region, false);
     }
 
     //determines the center of a region (as a Location) given its region coordinates

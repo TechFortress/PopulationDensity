@@ -31,6 +31,7 @@ All commands are prefixed with `/`. Commands that require a permission show its 
 | `populationdensity.unlimitedhoppers` | op | Ignore the per-chunk hopper cap |
 | `populationdensity.randomregion` | true | `/randomregion` |
 | `populationdensity.listregions` | true | `/listregions` |
+| `populationdensity.regionlookup` | true | `/myregion <region name>` (plain `/myregion` needs no permission) |
 | `populationdensity.lag` | true | `/lag` |
 | `populationdensity.prioritylogin` | false | Login priority level 25/100 |
 | `populationdensity.elitelogin` | false | Login priority level 50/100 |

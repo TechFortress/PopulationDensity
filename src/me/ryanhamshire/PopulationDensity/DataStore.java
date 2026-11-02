@@ -831,6 +831,10 @@ public class DataStore implements TabCompleter
         this.addDefault(defaults, Messages.NotInRegion, "You're not in a region!", null);
         this.addDefault(defaults, Messages.UnnamedRegion, "You're in the wilderness!  This region doesn't have a name.", null);
         this.addDefault(defaults, Messages.WhichRegion, "You're in the {0} region.", null);
+        this.addDefault(defaults, Messages.NoAssignedRegion, "You don't have an assigned region yet.", null);
+        this.addDefault(defaults, Messages.NeedRegionLookupPermission, "You don't have permission to look up other regions.", null);
+        this.addDefault(defaults, Messages.AssignedUnnamedRegion, "Your assigned region is unnamed.", null);
+        this.addDefault(defaults, Messages.AssignedRegion, "Your assigned region is {0}.", null);
         this.addDefault(defaults, Messages.RegionNamesNoSpaces, "Region names may not include spaces.", null);
         this.addDefault(defaults, Messages.RegionNameLength, "Region names must be at most {0} letters long.", "0: maximum length specified in config.yml");
         this.addDefault(defaults, Messages.RegionNamesOnlyLettersAndNumbers, "Region names may not include symbols or punctuation.", null);
@@ -945,6 +949,12 @@ public class DataStore implements TabCompleter
             return ImmutableList.of();
         }
 
+        //don't list region names to players who can't look them up
+        if (command.getName().equalsIgnoreCase("myregion") && !sender.hasPermission("populationdensity.regionlookup"))
+        {
+            return ImmutableList.of();
+        }
+
         StringBuilder builder = new StringBuilder();
         for (String arg : args)
         {
@@ -961,14 +971,18 @@ public class DataStore implements TabCompleter
             }
         }
 
-        Player senderPlayer = sender instanceof Player ? (Player)sender : null;
-        for (Player player : sender.getServer().getOnlinePlayers())
+        boolean regionNamesOnly = command.getName().equalsIgnoreCase("myregion");
+        if (!regionNamesOnly)
         {
-            if (senderPlayer == null || senderPlayer.canSee(player))
+            Player senderPlayer = sender instanceof Player ? (Player)sender : null;
+            for (Player player : sender.getServer().getOnlinePlayers())
             {
-                if (StringUtil.startsWithIgnoreCase(player.getName(), arg))
+                if (senderPlayer == null || senderPlayer.canSee(player))
                 {
-                    matches.add(player.getName());
+                    if (StringUtil.startsWithIgnoreCase(player.getName(), arg))
+                    {
+                        matches.add(player.getName());
+                    }
                 }
             }
         }
